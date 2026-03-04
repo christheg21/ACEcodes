@@ -1,0 +1,2918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACE — Online Card Games</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f12;
+    --surface: #14171c;
+    --surface2: #1c2028;
+    --surface3: #242933;
+    --border: #2a2f3a;
+    --text: #e8eaf0;
+    --muted: #7a8090;
+    --accent: #4f8cff;
+    --accent2: #00d4aa;
+    --danger: #ff5c5c;
+    --gold: #f5c542;
+    --radius: 14px;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; min-height: 100vh; flex-direction: column; }
+  .page.active { display: flex; }
+
+  /* ── NAV ── */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 40px;
+    background: rgba(13,15,18,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 22px; font-weight: 800;
+    color: var(--text); text-decoration: none;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .nav-links { display: flex; gap: 8px; align-items: center; }
+  .nav-links button {
+    background: none; border: none; color: var(--muted);
+    font-family: var(--font-body); font-size: 14px; font-weight: 500;
+    cursor: pointer; padding: 8px 14px; border-radius: 8px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .nav-links button:hover { color: var(--text); background: var(--surface2); }
+  .nav-links button.nav-active { color: var(--text); }
+  .btn-nav-cta {
+    background: var(--accent) !important; color: #fff !important;
+    padding: 8px 18px !important; border-radius: 8px !important;
+  }
+  .btn-nav-cta:hover { background: #3a7aef !important; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; border-radius: 10px;
+    font-family: var(--font-body); font-size: 14px; font-weight: 500;
+    cursor: pointer; border: none; transition: all 0.2s;
+    text-decoration: none;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #3a7aef; transform: translateY(-1px); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--surface3); }
+  .btn-success { background: var(--accent2); color: #0d0f12; font-weight: 600; }
+  .btn-success:hover { background: #00bfa0; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-lg { padding: 14px 28px; font-size: 15px; border-radius: 12px; }
+  .btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 8px; }
+
+  /* ── LANDING PAGE ── */
+  .hero {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 80px 40px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(79,140,255,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 80% 80%, rgba(0,212,170,0.08) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 100px; padding: 5px 14px; font-size: 12px;
+    color: var(--muted); margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(42px, 7vw, 80px); font-weight: 800;
+    line-height: 1.05; letter-spacing: -1.5px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    font-size: 17px; color: var(--muted); max-width: 480px;
+    margin-bottom: 36px; font-weight: 300;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+  .hero-cta {
+    display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  .hero-stats {
+    display: flex; gap: 48px; margin-top: 72px;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: var(--font-display); font-size: 28px; font-weight: 700;
+    color: var(--text);
+  }
+  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+
+  /* Games Grid on Landing */
+  .section { padding: 80px 40px; max-width: 1100px; margin: 0 auto; width: 100%; }
+  .section-header { margin-bottom: 40px; }
+  .section-header h2 {
+    font-family: var(--font-display); font-size: 32px; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .section-header p { color: var(--muted); font-size: 15px; }
+
+  .games-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .game-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .game-card::before {
+    content: ''; position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.25s;
+    border-radius: inherit;
+  }
+  .game-card.durak::before { background: radial-gradient(circle at top right, rgba(79,140,255,0.08), transparent 60%); }
+  .game-card.shithead::before { background: radial-gradient(circle at top right, rgba(0,212,170,0.08), transparent 60%); }
+  .game-card.gofish::before { background: radial-gradient(circle at top right, rgba(245,197,66,0.08), transparent 60%); }
+  .game-card:hover { border-color: rgba(79,140,255,0.4); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
+  .game-card:hover::before { opacity: 1; }
+
+  .game-icon { font-size: 36px; margin-bottom: 16px; }
+  .game-title {
+    font-family: var(--font-display); font-size: 20px; font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .game-desc { color: var(--muted); font-size: 13px; line-height: 1.5; margin-bottom: 18px; }
+  .game-meta { display: flex; gap: 10px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.4px;
+    padding: 3px 10px; border-radius: 100px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .tag-active { background: rgba(0,212,170,0.12); border-color: rgba(0,212,170,0.3); color: var(--accent2); }
+  .tag-accent { background: rgba(79,140,255,0.12); border-color: rgba(79,140,255,0.3); color: var(--accent); }
+
+  /* Features */
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+  }
+  .feature-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 14px;
+  }
+  .feature-title { font-weight: 600; margin-bottom: 6px; }
+  .feature-desc { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+  /* ── LOBBY PAGE ── */
+  .lobby-layout {
+    display: grid; grid-template-columns: 260px 1fr;
+    flex: 1; overflow: hidden;
+  }
+  .lobby-sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .sidebar-section-label {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--muted);
+    padding: 0 12px; margin: 12px 0 4px;
+  }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px;
+    cursor: pointer; font-size: 14px;
+    color: var(--muted); transition: all 0.15s;
+    border: none; background: none; width: 100%; text-align: left;
+    font-family: var(--font-body);
+  }
+  .sidebar-item:hover { background: var(--surface2); color: var(--text); }
+  .sidebar-item.active { background: var(--surface3); color: var(--text); }
+  .sidebar-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-green { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+  .dot-blue { background: var(--accent); }
+  .dot-gold { background: var(--gold); }
+  .dot-muted { background: var(--border); }
+  .sidebar-count {
+    margin-left: auto; font-size: 12px;
+    background: var(--surface3); border-radius: 100px;
+    padding: 1px 8px; color: var(--muted);
+  }
+
+  .lobby-main { display: flex; flex-direction: column; overflow-y: auto; }
+  .lobby-toolbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 20px 28px; border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .search-input {
+    flex: 1; min-width: 200px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 9px 14px;
+    color: var(--text); font-family: var(--font-body); font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--muted); }
+
+  .filter-chip {
+    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    border: 1px solid var(--border); background: var(--surface2);
+    color: var(--muted); cursor: pointer; transition: all 0.15s;
+    font-family: var(--font-body);
+  }
+  .filter-chip.active { background: rgba(79,140,255,0.15); border-color: rgba(79,140,255,0.4); color: var(--accent); }
+  .filter-chip:hover { color: var(--text); }
+
+  .lobby-rooms { padding: 20px 28px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .rooms-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 120px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--muted);
+    padding: 0 16px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .room-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 120px;
+    align-items: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .room-row:hover { border-color: rgba(79,140,255,0.3); background: var(--surface2); }
+  .room-name { font-weight: 500; font-size: 14px; }
+  .room-host { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .room-game-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 500;
+    padding: 3px 10px; border-radius: 100px;
+  }
+  .badge-durak { background: rgba(79,140,255,0.12); color: var(--accent); }
+  .badge-shithead { background: rgba(0,212,170,0.12); color: var(--accent2); }
+  .badge-gofish { background: rgba(245,197,66,0.12); color: var(--gold); }
+
+  .player-pips { display: flex; gap: 3px; align-items: center; }
+  .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .pip.empty { background: var(--surface3); border: 1px solid var(--border); }
+  .pip-text { font-size: 12px; color: var(--muted); margin-left: 5px; }
+
+  .status-waiting { color: var(--accent2); font-size: 12px; font-weight: 500; }
+  .status-full { color: var(--muted); font-size: 12px; }
+  .status-playing { color: var(--gold); font-size: 12px; font-weight: 500; }
+
+  /* Create room modal */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 32px;
+    width: 100%; max-width: 460px;
+    animation: scaleIn 0.2s ease;
+  }
+  .modal-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; margin-bottom: 24px; }
+  .form-group { margin-bottom: 18px; }
+  .form-label { font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; display: block; }
+  .form-input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 14px;
+    color: var(--text); font-family: var(--font-body); font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-select {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 14px;
+    color: var(--text); font-family: var(--font-body); font-size: 14px;
+    outline: none; cursor: pointer; appearance: none;
+  }
+  .game-select-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .game-select-btn {
+    border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 12px 8px; text-align: center;
+    cursor: pointer; transition: all 0.15s;
+    background: var(--surface2);
+    font-family: var(--font-body);
+  }
+  .game-select-btn:hover { border-color: var(--accent); }
+  .game-select-btn.selected { border-color: var(--accent); background: rgba(79,140,255,0.1); }
+  .game-select-btn .gsb-icon { font-size: 24px; margin-bottom: 4px; }
+  .game-select-btn .gsb-name { font-size: 12px; font-weight: 500; color: var(--text); }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  /* ── GAME PAGE ── */
+  .game-layout {
+    flex: 1; display: grid;
+    grid-template-columns: 1fr 280px;
+    overflow: hidden;
+  }
+  .game-table {
+    background: #0a1a14;
+    background-image: radial-gradient(ellipse 70% 50% at 50% 50%, #0d2419, #0a1a14);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    position: relative; overflow: hidden; min-height: 0;
+    border-right: 1px solid var(--border);
+  }
+  .felt-pattern {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.03;
+    background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%);
+    background-size: 8px 8px;
+  }
+
+  /* Opponent area */
+  .opponent-area {
+    position: absolute; top: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .player-label {
+    background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px; padding: 4px 14px;
+    font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.7);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .player-avatar { width: 7px; height: 7px; border-radius: 50%; background: var(--accent2); }
+
+  /* Cards */
+  .card-hand { display: flex; position: relative; }
+  .card-back {
+    width: 52px; height: 76px; border-radius: 6px;
+    background: linear-gradient(135deg, #1a3a8a, #2952cc);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    transition: transform 0.2s;
+  }
+  .card-back::after {
+    content: ''; position: absolute; inset: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 3px;
+  }
+  .opp-card { margin-left: -28px; }
+  .opp-card:first-child { margin-left: 0; }
+
+  /* Play area */
+  .play-area {
+    display: flex; gap: 20px; align-items: center;
+    flex-wrap: wrap; justify-content: center;
+    padding: 20px;
+  }
+  .play-slot {
+    width: 72px; height: 105px; border-radius: 8px;
+    border: 2px dashed rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: rgba(255,255,255,0.15);
+    font-size: 13px;
+  }
+  .card-face {
+    width: 72px; height: 105px; border-radius: 8px;
+    background: #fff; border: 1.5px solid rgba(0,0,0,0.1);
+    display: flex; flex-direction: column;
+    padding: 6px; position: relative;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+    cursor: pointer; transition: transform 0.15s;
+    font-family: Georgia, serif;
+  }
+  .card-face:hover { transform: translateY(-4px); }
+  .card-face .rank { font-size: 18px; font-weight: bold; line-height: 1; }
+  .card-face .suit { font-size: 22px; margin-top: 2px; }
+  .card-face .rank-bottom { position: absolute; bottom: 6px; right: 6px; transform: rotate(180deg); font-size: 18px; font-weight: bold; }
+  .card-face .suit-bottom { position: absolute; bottom: 22px; right: 6px; transform: rotate(180deg); font-size: 22px; }
+  .card-face.red .rank, .card-face.red .rank-bottom { color: #d32f2f; }
+  .card-face.red .suit { color: #d32f2f; }
+  .card-face.black .rank, .card-face.black .rank-bottom { color: #1a1a1a; }
+  .card-face.black .suit { color: #1a1a1a; }
+
+  /* Player hand */
+  .player-hand-area {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .player-hand { display: flex; }
+  .player-card { margin-left: -20px; transition: transform 0.15s; }
+  .player-card:first-child { margin-left: 0; }
+  .player-card:hover { transform: translateY(-12px) !important; z-index: 10; }
+
+  .game-actions { display: flex; gap: 8px; }
+
+  /* Deck area */
+  .deck-area {
+    position: absolute; right: 28px; top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .deck-stack { position: relative; width: 52px; height: 76px; }
+  .deck-card {
+    position: absolute; width: 52px; height: 76px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #1a3a8a, #2952cc);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .deck-count { font-size: 12px; color: rgba(255,255,255,0.4); }
+  .trump-card {
+    width: 52px; height: 76px; border-radius: 6px;
+    background: #fff; border: 1.5px solid rgba(0,0,0,0.1);
+    display: flex; flex-direction: column; padding: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    font-family: Georgia, serif;
+    transform: rotate(-90deg); margin-top: -20px;
+  }
+  .trump-card .rank { font-size: 15px; font-weight: bold; color: #d32f2f; }
+  .trump-card .suit { font-size: 18px; color: #d32f2f; }
+  .trump-label { font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; }
+
+  /* Sidebar */
+  .game-sidebar {
+    background: var(--surface); display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .sidebar-panel { padding: 20px; border-bottom: 1px solid var(--border); }
+  .sidebar-panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 14px; }
+  .player-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px; border-radius: 9px; margin-bottom: 6px;
+  }
+  .player-row.current-turn { background: rgba(79,140,255,0.08); border: 1px solid rgba(79,140,255,0.2); }
+  .player-avatar-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600;
+    background: var(--surface2); flex-shrink: 0;
+  }
+  .player-info { flex: 1; min-width: 0; }
+  .player-name { font-size: 13px; font-weight: 500; }
+  .player-cards-count { font-size: 11px; color: var(--muted); }
+  .turn-indicator {
+    font-size: 11px; color: var(--accent);
+    font-weight: 600; white-space: nowrap;
+  }
+
+  /* Chat */
+  .chat-area { flex: 1; display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .chat-msg { font-size: 13px; }
+  .chat-msg .sender { font-weight: 600; color: var(--accent); }
+  .chat-msg .sender.system { color: var(--muted); font-weight: 400; font-style: italic; }
+  .chat-msg .msg-text { color: var(--text); }
+  .chat-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+  .chat-input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px;
+    color: var(--text); font-family: var(--font-body); font-size: 13px;
+    outline: none;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+
+  /* ── PROFILE PAGE ── */
+  .profile-layout { max-width: 900px; margin: 0 auto; padding: 40px; width: 100%; }
+  .profile-header {
+    display: flex; align-items: center; gap: 24px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 28px; margin-bottom: 24px;
+  }
+  .profile-avatar {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 700; color: #fff;
+    font-family: var(--font-display); flex-shrink: 0;
+  }
+  .profile-name { font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+  .profile-handle { color: var(--muted); font-size: 14px; }
+  .profile-badges { display: flex; gap: 8px; margin-top: 10px; }
+  .profile-badge {
+    font-size: 11px; font-weight: 600; padding: 3px 10px;
+    border-radius: 100px; background: rgba(245,197,66,0.12);
+    border: 1px solid rgba(245,197,66,0.3); color: var(--gold);
+  }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; text-align: center;
+  }
+  .stat-card-num { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
+  .stat-card-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .history-table { width: 100%; border-collapse: collapse; }
+  .history-table th {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--muted);
+    padding: 10px 14px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .history-table td { padding: 12px 14px; font-size: 14px; border-bottom: 1px solid rgba(42,47,58,0.5); }
+  .history-table tr:hover td { background: var(--surface2); }
+  .result-win { color: var(--accent2); font-weight: 600; }
+  .result-loss { color: var(--danger); font-weight: 600; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 500;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 18px;
+    font-size: 14px; font-weight: 500;
+    display: none; align-items: center; gap: 10px;
+    animation: fadeUp 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .toast.show { display: flex; }
+  .toast-icon { font-size: 16px; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  @media (max-width: 768px) {
+    /* Layout */
+    .games-grid { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .lobby-layout { grid-template-columns: 1fr; }
+    .lobby-sidebar { display: none; }
+    .game-layout { grid-template-columns: 1fr; display: flex; flex-direction: column; }
+    .hero-stats { gap: 24px; }
+    nav { padding: 14px 20px; }
+    .section { padding: 50px 20px; }
+    .profile-layout { padding: 20px 16px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+    /* Game table — compressed for mobile */
+    .game-table { min-height: 340px; padding: 10px; border-radius: 12px; }
+    .opponent-area { padding: 8px 10px; min-height: 64px; }
+    .deck-area { bottom: auto; top: 50%; transform: translateY(-50%); right: 8px; gap: 4px; }
+    .deck-count { font-size: 10px; }
+    .play-area { min-height: 100px; gap: 4px; padding: 8px; flex-wrap: wrap; }
+    .card-face { width: 52px; height: 76px; border-radius: 7px; }
+    .card-face .rank { font-size: 14px; }
+    .card-face .suit { font-size: 17px; }
+    .card-face .rank-bottom, .card-face .suit-bottom { font-size: 13px; }
+    .card-back { width: 52px; height: 76px; }
+    .player-hand-area { padding: 8px 10px 12px; }
+    .player-hand { gap: 0; }
+    .player-card { margin-left: -24px; }
+    .game-actions { gap: 6px; flex-wrap: wrap; }
+    .btn.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    /* Mobile sidebar becomes a bottom drawer */
+    .game-sidebar {
+      display: flex !important;
+      flex-direction: row;
+      height: auto;
+      border-left: none;
+      border-top: 1px solid var(--border);
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+    .game-sidebar .sidebar-panel { 
+      min-width: 180px; 
+      border-bottom: none; 
+      border-right: 1px solid var(--border);
+      padding: 12px;
+    }
+    .chat-area { min-width: 240px; flex: 1; }
+    .chat-messages { max-height: 120px; }
+    .player-row { padding: 6px 0; }
+    .turn-indicator { font-size: 10px; }
+  }
+
+  @media (max-width: 480px) {
+    nav { padding: 10px 14px; }
+    .nav-logo { font-size: 18px; }
+    h1 { font-size: 36px; }
+    .hero-stats { grid-template-columns: repeat(2, 1fr); display: grid; gap: 16px; }
+    .stat-num { font-size: 28px; }
+    .card-face { width: 44px; height: 66px; }
+    .game-sidebar { flex-direction: column; }
+    .game-sidebar .sidebar-panel { min-width: 100%; border-right: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" onclick="showPage('landing')">
+    <div class="logo-icon">♠</div>
+    ACE
+  </a>
+  <div class="nav-links" id="nav-links">
+    <button onclick="showPage('lobby')" style="background:none;border:none;color:var(--muted);font-family:var(--font-body);font-size:14px;cursor:pointer;padding:8px 14px;border-radius:8px;">Play</button>
+    <button onclick="showLeaderboard()" style="background:none;border:none;color:var(--muted);font-family:var(--font-body);font-size:14px;cursor:pointer;padding:8px 14px;border-radius:8px;">Leaderboard</button>
+    <div id="nav-user-area" style="display:flex;align-items:center;gap:4px;"></div>
+    <span id="conn-dot" title="Connection status" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);transition:background .3s;margin-left:2px;"></span>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════ LANDING ═══════════════════════════════════ -->
+<div class="page active" id="page-landing">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-badge"><span class="badge-dot"></span><span id="online-count">–</span> players online right now</div>
+    <h1>Card games,<br><span>played live.</span></h1>
+    <p>Jump into real-time lobbies for Durak, Shithead, Go Fish and more. No downloads. No installs. Just play.</p>
+    <div class="hero-cta">
+      <button class="btn btn-primary btn-lg" onclick="showPage('lobby')">Browse Lobbies</button>
+      <button class="btn btn-secondary btn-lg" onclick="openCreateRoom()">Create a Room</button>
+      <button class="btn btn-secondary btn-lg" onclick="showLeaderboard()" style="background:rgba(245,197,66,.1);border-color:rgba(245,197,66,.3);color:var(--gold)">🏆 Leaderboard</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">3</div><div class="stat-label">Games</div></div>
+      <div class="stat"><div class="stat-num" id="stat-online">–</div><div class="stat-label">Online</div></div>
+      <div class="stat"><div class="stat-num" id="stat-players">–</div><div class="stat-label">Total Players</div></div>
+      <div class="stat"><div class="stat-num" id="stat-games">–</div><div class="stat-label">Games Played</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>Choose your game</h2>
+      <p>Classic card games reimagined for online multiplayer</p>
+    </div>
+    <div class="games-grid">
+      <div class="game-card durak" onclick="showPage('lobby')">
+        <div class="game-icon">🃏</div>
+        <div class="game-title">Durak</div>
+        <div class="game-desc">The classic Russian card game. Attack, defend, and don't be the last fool holding cards.</div>
+        <div class="game-meta">
+          <span class="tag tag-active">● Live</span>
+          <span class="tag">2–6 players</span>
+          <span class="tag tag-accent">Most played</span>
+        </div>
+      </div>
+      <div class="game-card shithead" onclick="showPage('lobby')">
+        <div class="game-icon">🤡</div>
+        <div class="game-title">Shithead</div>
+        <div class="game-desc">Get rid of all your cards. The last player holding them wears the crown of shame.</div>
+        <div class="game-meta">
+          <span class="tag tag-active">● Live</span>
+          <span class="tag">2–5 players</span>
+        </div>
+      </div>
+      <div class="game-card gofish" onclick="showPage('lobby')">
+        <div class="game-icon">🐟</div>
+        <div class="game-title">Go Fish</div>
+        <div class="game-desc">Ask for cards, collect sets of four. Simple rules, surprisingly competitive.</div>
+        <div class="game-meta">
+          <span class="tag tag-active">● Live</span>
+          <span class="tag">2–6 players</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>Everything you need</h2>
+      <p>Built for seamless multiplayer card game experience</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Real-time gameplay</div>
+        <div class="feature-desc">WebSocket-powered live lobbies with instant card plays and zero noticeable lag.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <div class="feature-title">In-game chat</div>
+        <div class="feature-desc">Talk strategy, trash talk your opponents, or just say good game — all in the sidebar.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏆</div>
+        <div class="feature-title">Rankings & stats</div>
+        <div class="feature-desc">Track your win rate per game, view match history, and climb the leaderboard.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-title">Private rooms</div>
+        <div class="feature-desc">Create a password-protected room and share the code only with friends.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">Skill-based matching</div>
+        <div class="feature-desc">Ranked mode pairs you with players at a similar level for fair competition.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <div class="feature-title">Works everywhere</div>
+        <div class="feature-desc">Desktop, tablet, or mobile — no app needed, just open your browser and play.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ LOBBY ═══════════════════════════════════ -->
+<div class="page" id="page-lobby">
+  <div class="lobby-layout">
+    <aside class="lobby-sidebar">
+      <div class="sidebar-section-label">Games</div>
+      <button class="sidebar-item active" onclick="filterGame('all',this)"><span>🎴</span> All Games <span class="sidebar-count">18</span></button>
+      <button class="sidebar-item" onclick="filterGame('durak',this)"><span class="dot dot-blue"></span> Durak <span class="sidebar-count">9</span></button>
+      <button class="sidebar-item" onclick="filterGame('shithead',this)"><span class="dot dot-green"></span> Shithead <span class="sidebar-count">5</span></button>
+      <button class="sidebar-item" onclick="filterGame('gofish',this)"><span class="dot dot-gold"></span> Go Fish <span class="sidebar-count">4</span></button>
+
+      <div class="sidebar-section-label">Status</div>
+      <button class="sidebar-item" onclick="filterStatus('waiting',this)"><span class="dot dot-green"></span> Waiting <span class="sidebar-count">11</span></button>
+      <button class="sidebar-item" onclick="filterStatus('playing',this)"><span class="dot dot-gold"></span> In Progress <span class="sidebar-count">7</span></button>
+
+      <div style="flex:1"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="openCreateRoom()">+ Create Room</button>
+    </aside>
+
+    <div class="lobby-main">
+      <div class="lobby-toolbar">
+        <input class="search-input" placeholder="🔍  Search rooms…" oninput="filterSearch(this.value)">
+        <button class="filter-chip active" onclick="toggleChip(this,'all')">All</button>
+        <button class="filter-chip" onclick="toggleChip(this,'ranked')">Ranked</button>
+        <button class="filter-chip" onclick="toggleChip(this,'casual')">Casual</button>
+        <button class="btn btn-primary btn-sm" onclick="openCreateRoom()">+ New Room</button>
+      </div>
+
+      <div class="lobby-rooms">
+        <div class="rooms-header">
+          <span>Room / Host</span>
+          <span>Game</span>
+          <span>Players</span>
+          <span>Status</span>
+          <span></span>
+        </div>
+
+        <div id="room-list">
+          <!-- Rooms rendered by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ GAME (Durak) ═══════════════════════════════════ -->
+<div class="page" id="page-game">
+  <div class="game-layout">
+    <div class="game-table">
+      <div class="felt-pattern"></div>
+
+      <!-- Opponent -->
+      <div class="opponent-area">
+        <div class="player-label"><span class="player-avatar"></span> Vladislav_K · 6 cards</div>
+        <div class="card-hand" id="opp-hand">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Deck + Trump -->
+      <div class="deck-area">
+        <div class="deck-stack">
+          <div class="deck-card" style="top:4px;left:4px;"></div>
+          <div class="deck-card" style="top:2px;left:2px;"></div>
+          <div class="deck-card"></div>
+        </div>
+        <div class="deck-count">24 left</div>
+        <div class="trump-card">
+          <div class="rank">6</div>
+          <div class="suit">♥</div>
+        </div>
+        <div class="trump-label">♥ Trump</div>
+      </div>
+
+      <!-- Waiting overlay (shown before game starts) -->
+      <div id="waiting-overlay" style="position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;
+        align-items:center;justify-content:center;gap:16px;background:rgba(13,15,18,0.7);
+        backdrop-filter:blur(4px);border-radius:inherit">
+        <div style="font-size:32px">🃏</div>
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:700" id="waiting-title">Waiting for players…</div>
+        <div style="font-size:13px;color:var(--muted)" id="waiting-sub">Host will start the game</div>
+        <div id="waiting-players" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px"></div>
+      </div>
+
+      <!-- Play area -->
+      <div class="play-area" id="play-area">
+        <div class="play-slot">Drop here</div>
+      </div>
+
+      <!-- Player hand -->
+      <div class="player-hand-area">
+        <div class="player-hand" id="player-hand">
+          <!-- rendered by JS -->
+        </div>
+        <div class="game-actions"></div>
+      </div>
+    </div>
+
+    <!-- Game sidebar -->
+    <div class="game-sidebar">
+      <div class="sidebar-panel">
+        <div class="sidebar-panel-title">Players</div>
+        <div class="player-row current-turn">
+          <div class="player-avatar-circle" style="background:linear-gradient(135deg,#4f8cff,#6a9fff)">V</div>
+          <div class="player-info">
+            <div class="player-name">Vladislav_K</div>
+            <div class="player-cards-count">6 cards</div>
+          </div>
+          <div class="turn-indicator">Attacking</div>
+        </div>
+        <div class="player-row">
+          <div class="player-avatar-circle" style="background:linear-gradient(135deg,#00d4aa,#00bfa0)">Y</div>
+          <div class="player-info">
+            <div class="player-name">You</div>
+            <div class="player-cards-count">6 cards</div>
+          </div>
+        </div>
+        <div class="player-row">
+          <div class="player-avatar-circle" style="background:linear-gradient(135deg,#f5c542,#e0a800)">M</div>
+          <div class="player-info">
+            <div class="player-name">MikeD</div>
+            <div class="player-cards-count">5 cards</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-panel" style="display:flex;flex-direction:column;gap:6px;">
+        <div class="sidebar-panel-title">Game Info</div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;">
+          <span style="color:var(--muted)">Game</span><span>Durak</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;">
+          <span style="color:var(--muted)">Round</span><span>4</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;">
+          <span style="color:var(--muted)">Mode</span><span>Casual</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;">
+          <span style="color:var(--muted)">Trump</span><span>♥ Hearts</span>
+        </div>
+      </div>
+
+      <div class="chat-area">
+        <div class="sidebar-panel" style="padding-bottom:10px;">
+          <div class="sidebar-panel-title">Chat</div>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-msg"><span class="sender system">Game started</span></div>
+          <div class="chat-msg"><span class="sender">Vladislav_K</span> <span class="msg-text">gl hf!</span></div>
+          <div class="chat-msg"><span class="sender">MikeD</span> <span class="msg-text">let's go 🔥</span></div>
+          <div class="chat-msg"><span class="sender system">Vladislav_K attacks with 9♣</span></div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" placeholder="Message…" id="chat-input" onkeydown="sendChat(event)">
+          <button class="btn btn-secondary btn-sm" onclick="sendChatBtn()">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PROFILE ═══════════════════════════════════ -->
+<div class="page" id="page-profile">
+  <div class="profile-layout">
+    <div class="profile-header">
+      <div class="profile-avatar">J</div>
+      <div>
+        <div class="profile-name">JackOfAllCards</div>
+        <div class="profile-handle">@jackofallcards · Member since Jan 2024</div>
+        <div class="profile-badges" id="profile-badges">
+          <!-- populated by renderProfile() -->
+        </div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <button class="btn btn-secondary btn-sm" onclick="showPage('lobby')">← Play</button>
+        <button class="btn btn-danger btn-sm" onclick="logout()" title="Sign out" style="background:rgba(255,92,92,.1);border-color:rgba(255,92,92,.3);color:var(--danger)">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-num" style="color:var(--accent2)">68%</div>
+        <div class="stat-card-label">Win Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num">312</div>
+        <div class="stat-card-label">Games Played</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num" style="color:var(--gold)">212</div>
+        <div class="stat-card-label">Wins</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num" style="color:var(--accent)">1,840</div>
+        <div class="stat-card-label">ELO Rating</div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px;">
+      <div style="font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:18px;">Stats by Game</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        <div id="stat-durak" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;">
+          <div style="font-size:22px;margin-bottom:6px;">🃏</div>
+          <div style="font-weight:600;margin-bottom:4px;">Durak</div>
+          <div id="stat-durak-text" style="font-size:13px;color:var(--muted)">0 games</div>
+        </div>
+        <div id="stat-shithead" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;">
+          <div style="font-size:22px;margin-bottom:6px;">🤡</div>
+          <div style="font-weight:600;margin-bottom:4px;">Shithead</div>
+          <div id="stat-shithead-text" style="font-size:13px;color:var(--muted)">0 games</div>
+        </div>
+        <div id="stat-gofish" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;">
+          <div style="font-size:22px;margin-bottom:6px;">🐟</div>
+          <div style="font-weight:600;margin-bottom:4px;">Go Fish</div>
+          <div id="stat-gofish-text" style="font-size:13px;color:var(--muted)">0 games</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+      <div style="font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:18px;">Recent Games</div>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Game</th><th>Mode</th><th>Players</th><th>Result</th><th>ELO</th><th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="history-tbody">
+          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════ LEADERBOARD ═══════════════════════════════════ -->
+<div class="page" id="page-leaderboard">
+  <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
+      <div>
+        <div style="font-family:var(--font-display);font-size:32px;font-weight:800;margin-bottom:4px;">🏆 Leaderboard</div>
+        <div style="color:var(--muted);font-size:14px;">Top players by ELO rating · minimum 3 games</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;" id="lb-game-filters">
+        <button class="btn btn-primary btn-sm lb-filter active" onclick="loadLeaderboard('',this)">Overall</button>
+        <button class="btn btn-secondary btn-sm lb-filter" onclick="loadLeaderboard('durak',this)">🃏 Durak</button>
+        <button class="btn btn-secondary btn-sm lb-filter" onclick="loadLeaderboard('shithead',this)">🤡 Shithead</button>
+        <button class="btn btn-secondary btn-sm lb-filter" onclick="loadLeaderboard('gofish',this)">🐟 Go Fish</button>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <table class="history-table" id="lb-table">
+        <thead>
+          <tr>
+            <th style="width:48px">#</th>
+            <th>Player</th>
+            <th>ELO</th>
+            <th>Games</th>
+            <th>Win Rate</th>
+            <th>W / L</th>
+          </tr>
+        </thead>
+        <tbody id="lb-tbody">
+          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:16px;text-align:center;">
+      <button class="btn btn-secondary btn-sm" id="lb-load-more" onclick="loadMoreLeaderboard()" style="display:none">Load more</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE ROOM MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title">Create a Room</div>
+    <div class="form-group">
+      <label class="form-label">Room Name</label>
+      <input class="form-input" placeholder="e.g. Friday Night Durak" value="My Room">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Game</label>
+      <div class="game-select-grid" id="game-select-grid">
+        <div class="game-select-btn selected" onclick="selectGame(this)">
+          <div class="gsb-icon">🃏</div><div class="gsb-name">Durak</div>
+        </div>
+        <div class="game-select-btn" onclick="selectGame(this)">
+          <div class="gsb-icon">🤡</div><div class="gsb-name">Shithead</div>
+        </div>
+        <div class="game-select-btn" onclick="selectGame(this)">
+          <div class="gsb-icon">🐟</div><div class="gsb-name">Go Fish</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <label class="form-label">Max Players</label>
+        <select class="form-select">
+          <option value="2">2 players</option>
+          <option value="4" selected>4 players</option>
+          <option value="6">6 players</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Mode</label>
+        <select class="form-select">
+          <option>Casual</option>
+          <option>Ranked</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password (optional)</label>
+      <input class="form-input" placeholder="Leave blank for public room" type="password">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-overlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="createRoom()">Create Room</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon"></span>
+  <span id="toast-msg"></span>
+</div>
+
+
+<!-- Socket.io — auto-served by the ACE backend -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+'use strict';
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  INJECTED STYLES
+// ─────────────────────────────────────────────────────────────────────────────
+(function() {
+  const s = document.createElement('style');
+  s.textContent = `
+    .selected-card  { box-shadow:0 0 0 3px var(--accent2) !important; transform:translateY(-20px) !important; z-index:20 !important; }
+    .needs-defense  { box-shadow:0 0 0 2px var(--gold) !important; cursor:pointer !important; }
+    .unplayable     { opacity:.42; cursor:default !important; pointer-events:none; }
+    .pending-atk    { box-shadow:0 0 0 2px var(--accent) !important; }
+
+    .turn-banner {
+      position:absolute; top:14px; left:50%; transform:translateX(-50%);
+      background:rgba(79,140,255,.12); border:1px solid var(--accent);
+      border-radius:100px; padding:5px 18px; font-size:13px; font-weight:600;
+      color:var(--accent); white-space:nowrap; pointer-events:none; z-index:10;
+      transition:all .2s;
+    }
+    .turn-banner.defending { background:rgba(245,197,66,.12); border-color:var(--gold);  color:var(--gold);  }
+    .turn-banner.waiting   { background:rgba(122,128,144,.08); border-color:var(--muted); color:var(--muted); }
+
+    .elo-badge { display:inline-flex; align-items:center; gap:4px; font-size:13px;
+      font-weight:700; padding:3px 12px; border-radius:100px; }
+    .elo-up   { background:rgba(0,212,170,.15); color:var(--accent2); }
+    .elo-down { background:rgba(255,92,92,.15);  color:var(--danger); }
+    .elo-zero { background:rgba(122,128,144,.1); color:var(--muted); }
+
+    #conn-dot.on  { background:var(--accent2); }
+    #conn-dot.off { background:var(--danger); }
+
+    .room-code-btn {
+      font-size:11px; font-weight:700; letter-spacing:1.5px;
+      color:var(--accent); background:rgba(79,140,255,.1); border:1px solid rgba(79,140,255,.25);
+      border-radius:6px; padding:2px 10px; cursor:pointer; transition:background .2s;
+    }
+    .room-code-btn:hover { background:rgba(79,140,255,.2); }
+
+    @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+    .game-over-modal { animation:slideUp .25s ease; }
+    .turn-timer {
+      position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
+      font-size:11px; color:var(--muted); pointer-events:none; z-index:10;
+      transition:color .3s;
+    }
+    .turn-timer.urgent { color:var(--danger); font-weight:700; }
+  `;
+  document.head.appendChild(s);
+})();
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────────────────────────────────────
+const App = {
+  socket: null,
+  token:  localStorage.getItem('ace_token') || null,
+  user:   JSON.parse(localStorage.getItem('ace_user') || 'null'),
+  rooms:  [],
+  currentRoom: null,
+  gameState:   null,
+  selectedCardId:     null,
+  pendingAttackCardId: null,
+  turnTimerHandle: null,
+  turnTimerEnd: null,
+  // Lobby filters
+  activeGameFilter:   'all',
+  activeStatusFilter: null,
+  searchQuery:        '',
+  modeFilter:         'all',
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  ROUTING
+// ─────────────────────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + name);
+  if (!page) return;
+  page.classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'lobby')   { App.socket?.emit('lobby:join'); updateNavAuth(); }
+  if (name === 'profile') renderProfile();
+  if (name === 'landing') updateNavAuth();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SOCKET
+// ─────────────────────────────────────────────────────────────────────────────
+function initSocket() {
+  // Stable guest ID persists across page reloads so guests can rejoin games
+  let guestId = localStorage.getItem('ace_guest_id');
+  if (!guestId) {
+    guestId = 'g_' + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem('ace_guest_id', guestId);
+  }
+  App.guestId = guestId;  // store so renderers can find it
+  App.socket = io(window.location.origin, {
+    auth: { token: App.token || '', guestId },
+    reconnectionAttempts: 20,
+    reconnectionDelay: 1500,
+  });
+  const s = App.socket;
+
+  s.on('connect',       ()  => { setConnDot(true);  s.emit('lobby:join'); });
+  s.on('disconnect',    ()  => { setConnDot(false); showToast('⚠️','Connection lost — reconnecting…'); });
+  s.on('connect_error', err => { setConnDot(false); console.warn('[socket]', err.message); });
+  s.on('reconnect', () => {
+    setConnDot(true);
+    showToast('✅', 'Reconnected');
+    if (App.currentRoom?.id) {
+      // Try to rejoin the room we were in
+      s.emit('room:rejoin', { roomId: App.currentRoom.id }, res => {
+        if (res?.error) {
+          showToast('⚠️', `Could not rejoin: ${res.error}`);
+          App.currentRoom = null;
+          App.gameState = null;
+          showPage('lobby');
+          s.emit('lobby:join');
+        } else {
+          showToast('✅', 'Rejoined!');
+          // Restore chat history
+          const chatEl = document.getElementById('chat-messages');
+          if (chatEl && res.chat?.length) {
+            chatEl.innerHTML = '';
+            res.chat.forEach(m => addChat(m.senderUsername, m.text));
+          }
+          if (res.gameInProgress) {
+            // game:state event will arrive separately from server
+            showPage('game');
+          } else {
+            App.currentRoom = res.room;
+            renderGameRoom(res.room);
+            showPage('game');
+          }
+        }
+      });
+    } else {
+      s.emit('lobby:join');
+    }
+  });
+
+  // Lobby
+  s.on('lobby:rooms',        rooms    => { App.rooms = rooms; renderRooms(); updateSidebarCounts(); });
+  s.on('lobby:roomUpdated', room => {
+    _upsertRoom(room);
+    renderRooms();
+    updateSidebarCounts();
+    // If we're in this room (waiting), update our view
+    if (App.currentRoom?.id === room.id && !App.gameState) {
+      App.currentRoom = room;
+      _renderLobbyPlayers(room.players || []);
+      _renderInfoPanel(room);
+      _updateWaitingOverlay(room);
+    }
+  });
+  s.on('lobby:roomRemoved',  ({roomId})=> { App.rooms = App.rooms.filter(r=>r.id!==roomId); renderRooms(); updateSidebarCounts(); });
+
+  // Room
+  s.on('room:joined', ({roomId}) => {
+    // currentRoom will be set by _doJoin/createRoom callbacks; this is a fallback
+    if (!App.currentRoom || App.currentRoom.id !== roomId) {
+      App.currentRoom = App.rooms.find(r => r.id === roomId) || { id: roomId };
+    }
+  });
+  s.on('room:playerJoined', ({username, room}) => {
+    showToast('👋', `${username} joined`);
+    addSystemChat(`${username} joined`);
+    if (room && App.currentRoom?.id === room.id) {
+      App.currentRoom = room;
+      _upsertRoom(room);
+      _renderLobbyPlayers(room.players || []);
+      _renderInfoPanel(room);
+      _updateWaitingOverlay(room);
+    } else {
+      refreshRoomPanel();
+    }
+  });
+  s.on('room:playerLeft', ({username}) => {
+    showToast('👋', `${username} left`);
+    addSystemChat(`${username} left`);
+    refreshRoomPanel();
+  });
+  // room:playerRejoined handled below in game:reset block
+  s.on('room:chat',        msg          => addChat(msg.senderUsername, msg.text));
+
+  // Game
+  s.on('game:state', state => {
+    App.gameState = state;
+    // Hide waiting overlay as game is now live
+    const overlay = document.getElementById('waiting-overlay');
+    if (overlay) overlay.style.display = 'none';
+    startLocalTimer(state);
+    // Route to spectator view if we're not an active player
+    const myId = App.user?.id || App.guestId;
+    const amPlayer = state.players?.some(p => p.id === myId);
+    if (App.isSpectator || !amPlayer) {
+      renderSpectatorView(state);
+    } else {
+      renderGameState(state);
+    }
+  });
+  s.on('game:finished', data => showGameOver(data));
+  s.on('game:reset', ({room}) => {
+    // Host reset — close game over modal, return to waiting state
+    document.getElementById('game-over-overlay')?.remove();
+    App.gameState = null;
+    App.selectedCardId = null;
+    App.pendingAttackCardId = null;
+    clearInterval(App.turnTimerHandle);
+    document.querySelector('.turn-timer')?.remove();
+    document.querySelector('.turn-banner')?.remove();
+    if (room) {
+      App.currentRoom = room;
+      renderGameRoom(room);
+    }
+    showToast('🔄', 'Room reset — waiting for host to start');
+  });
+  s.on('room:playerRejoined', ({username}) => {
+    showToast('🔄', `${username} reconnected`);
+    addSystemChat(`${username} reconnected`);
+  });
+  s.on('game:eloUpdate',changes => showEloChanges(changes));
+  s.on('error',         ({error})=> showToast('❌', error));
+  s.on('game:error',    ({error})=> showToast('❌', error));
+  s.on('server:stats',  ({online, totalPlayers, totalGames}) => {
+    const el = document.getElementById('online-count');
+    if (el) el.textContent = online;
+    // Update landing page hero stats
+    const statOnline = document.getElementById('stat-online');
+    if (statOnline) statOnline.textContent = online;
+    if (totalPlayers != null) {
+      const sp = document.getElementById('stat-players');
+      if (sp) sp.textContent = totalPlayers >= 1000 ? (totalPlayers/1000).toFixed(1)+'k' : totalPlayers;
+    }
+    if (totalGames != null) {
+      const sg = document.getElementById('stat-games');
+      if (sg) sg.textContent = totalGames >= 1000 ? (totalGames/1000).toFixed(1)+'k' : totalGames;
+    }
+  });
+}
+
+function _upsertRoom(r) {
+  const i = App.rooms.findIndex(x => x.id===r.id);
+  if (i>=0) App.rooms[i]=r; else App.rooms.unshift(r);
+}
+function setConnDot(on) {
+  const d = document.getElementById('conn-dot');
+  if (d) d.className = on ? 'on' : 'off';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  AUTH
+// ─────────────────────────────────────────────────────────────────────────────
+function updateNavAuth() {
+  const area = document.getElementById('nav-user-area');
+  if (!area) return;
+  if (App.user) {
+    area.innerHTML =
+      `<button onclick="showPage('profile')" style="background:none;border:none;color:var(--text);
+        font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;
+        padding:8px 12px;border-radius:8px;">${esc(App.user.username)}</button>
+      <button onclick="logout()" title="Sign out" style="background:none;border:none;
+        color:var(--muted);font-size:18px;cursor:pointer;padding:6px 8px;border-radius:8px;
+        line-height:1">↪</button>`;
+  } else {
+    area.innerHTML =
+      `<button onclick="openAuthModal()" style="background:none;border:none;color:var(--muted);
+        font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;
+        padding:8px 14px;border-radius:8px;">Sign In</button>`;
+  }
+}
+
+
+async function _authFetch(url, opts = {}) {
+  const res = await fetch(url, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...opts.headers,
+      ...(App.token ? { Authorization: `Bearer ${App.token}` } : {}) },
+  });
+  if (res.status === 401) {
+    // Token expired or invalid — silently log out
+    App.token = null; App.user = null;
+    localStorage.removeItem('ace_token');
+    localStorage.removeItem('ace_user');
+    updateNavAuth();
+    showToast('🔒', 'Session expired — please sign in again');
+    openAuthModal();
+    throw new Error('Unauthorized');
+  }
+  return res;
+}
+
+async function submitAuth() {
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const isReg    = document.getElementById('auth-toggle').dataset.mode === 'register';
+  const errEl    = document.getElementById('auth-error');
+  const btn      = document.getElementById('auth-submit-btn');
+  errEl.textContent = '';
+  if (!username || !password) { errEl.textContent = 'All fields required.'; return; }
+
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const res  = await fetch(`/api/auth/${isReg ? 'register' : 'login'}`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({username, password}),
+    });
+    const data = await res.json();
+    if (data.error) { errEl.textContent = data.error; return; }
+    _saveAuth(data);
+    closeModal('modal-auth');
+    updateNavAuth();
+    showToast('✅', `Welcome, ${data.user.username}!`);
+  } catch (e) {
+    errEl.textContent = 'Network error — please try again.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = isReg ? 'Register' : 'Sign In';
+  }
+}
+
+function _saveAuth(data) {
+  App.token = data.token;
+  App.user  = data.user;
+  // If an invite link was clicked before login, join now
+  if (App._pendingJoinCode) {
+    const code = App._pendingJoinCode;
+    App._pendingJoinCode = null;
+    setTimeout(() => joinRoom(code), 300);
+  }
+  localStorage.setItem('ace_token', data.token);
+  localStorage.setItem('ace_user', JSON.stringify(data.user));
+  App.socket.auth = {token: App.token};
+  App.socket.disconnect().connect();
+}
+
+function logout() {
+  App.token = null; App.user = null;
+  localStorage.removeItem('ace_token'); localStorage.removeItem('ace_user');
+  App.socket.auth = {token:''};
+  App.socket.disconnect().connect();
+  updateNavAuth();
+  showToast('👋','Signed out');
+  showPage('landing');
+}
+
+function openAuthModal() { openModal('modal-auth'); }
+function toggleAuthMode() {
+  const btn  = document.getElementById('auth-toggle');
+  const title= document.getElementById('auth-title');
+  const sbtn = document.getElementById('auth-submit-btn');
+  const isReg = btn.dataset.mode === 'register';
+  btn.dataset.mode = isReg ? 'login' : 'register';
+  title.textContent = isReg ? 'Sign In' : 'Create Account';
+  sbtn.textContent  = isReg ? 'Sign In' : 'Register';
+  btn.textContent   = isReg ? 'No account? Register' : 'Have an account? Sign In';
+  document.getElementById('auth-error').textContent = '';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  LOBBY
+// ─────────────────────────────────────────────────────────────────────────────
+function renderRooms() {
+  updateSidebarCounts();
+  const list = document.getElementById('room-list');
+  const data = App.rooms.filter(r => {
+    if (App.activeGameFilter !== 'all' && r.game !== App.activeGameFilter) return false;
+    if (App.activeStatusFilter && r.status !== App.activeStatusFilter) return false;
+    if (App.modeFilter !== 'all' && r.mode !== App.modeFilter) return false;
+    if (App.searchQuery) {
+      const q = App.searchQuery;
+      if (!r.name.toLowerCase().includes(q) && !r.hostUsername.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (!data.length) {
+    list.innerHTML = `<div style="text-align:center;padding:48px 24px;color:var(--muted);font-size:14px;">
+      No rooms found. <span style="color:var(--accent);cursor:pointer" onclick="openCreateRoom()">Create one?</span></div>`;
+    return;
+  }
+  const ICONS = {durak:'🃏',shithead:'🤡',gofish:'🐟'};
+  list.innerHTML = data.map(r => {
+    const pips = Array.from({length:r.maxPlayers},(_,i)=>
+      `<div class="pip${i>=r.playerCount?' empty':''}"></div>`).join('');
+    const status = r.status==='waiting'
+      ? `<span class="status-waiting">● Waiting</span>`
+      : r.status==='playing'
+      ? `<span class="status-playing">▶ Playing</span>`
+      : `<span style="color:var(--muted);font-size:12px">Full</span>`;
+    const canJoin = r.status==='waiting' && r.playerCount < r.maxPlayers;
+    const btn = canJoin
+      ? `<button class="btn btn-primary btn-sm" onclick="joinRoom('${r.id}')">Join</button>`
+      : r.status==='playing'
+      ? `<button class="btn btn-secondary btn-sm" onclick="spectateRoom('${r.id}')">👁 Spectate</button>`
+      : `<button class="btn btn-secondary btn-sm" disabled style="opacity:.35">Full</button>`;
+    return `<div class="room-row">
+      <div>
+        <div class="room-name">${ICONS[r.game]||'🎴'} ${esc(r.name)}${r.hasPassword?' 🔒':''}</div>
+        <div class="room-host">by ${esc(r.hostUsername)} · ${r.mode}</div>
+      </div>
+      <div><span class="room-game-badge badge-${r.game}">${esc(r.gameLabel||r.game)}</span></div>
+      <div><div class="player-pips">${pips}<span class="pip-text">${r.playerCount}/${r.maxPlayers}</span></div></div>
+      <div>${status}</div>
+      <div>${btn}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateSidebarCounts() {
+  const c = {all:App.rooms.length,durak:0,shithead:0,gofish:0,waiting:0,playing:0};
+  App.rooms.forEach(r=>{
+    if(c[r.game]!==undefined) c[r.game]++;
+    if(c[r.status]!==undefined) c[r.status]++;
+  });
+  const els = document.querySelectorAll('.lobby-sidebar .sidebar-count');
+  ['all','durak','shithead','gofish','waiting','playing'].forEach((k,i)=>{ if(els[i]) els[i].textContent=c[k]||0; });
+}
+
+function filterGame(g, el) {
+  App.activeGameFilter = g;
+  document.querySelectorAll('.lobby-sidebar .sidebar-item').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active'); renderRooms();
+}
+function filterStatus(s, el) {
+  App.activeStatusFilter = App.activeStatusFilter===s ? null : s;
+  document.querySelectorAll('.lobby-sidebar .sidebar-item').forEach(e=>e.classList.remove('active'));
+  if (App.activeStatusFilter) el.classList.add('active');
+  renderRooms();
+}
+function filterSearch(v) { App.searchQuery = v.toLowerCase().trim(); renderRooms(); }
+function toggleChip(el, mode) {
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); App.modeFilter = mode||'all'; renderRooms();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  JOIN / CREATE ROOM
+// ─────────────────────────────────────────────────────────────────────────────
+
+function spectateRoom(roomId) {
+  if (!App.user) { showToast('🔒', 'Sign in to spectate'); openAuthModal(); return; }
+  App.socket.emit('room:spectate', { roomId }, res => {
+    if (res?.error) { showToast('❌', res.error); return; }
+    App.currentRoom = res.room;
+    App.isSpectator = true;
+    document.getElementById('chat-messages').innerHTML = '';
+    (res.chat || []).forEach(m => addChat(m.senderUsername, m.text));
+    renderGameRoom(res.room);
+    showPage('game');
+    showToast('👁', `Watching ${res.room.name}`);
+    // If game is live, request current state
+    if (res.room.status === 'playing') {
+      App.socket.emit('room:requestState', {}, stateData => {
+        if (stateData?.state) {
+          App.gameState = stateData.state;
+          renderSpectatorView(stateData.state);
+        }
+      });
+    }
+  });
+}
+
+function renderSpectatorView(state) {
+  // Spectators see all players' card counts, table, and game info
+  // but no playable hand — just a "You are spectating" banner
+  let banner = document.querySelector('.turn-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.className = 'turn-banner';
+    document.querySelector('.game-table')?.appendChild(banner);
+  }
+  banner.className = 'turn-banner waiting';
+
+  const game = App.currentRoom?.game || 'durak';
+  if (game === 'durak') {
+    const attacker = state.players[state.attackerIndex];
+    const defender = state.players[state.defenderIndex];
+    banner.textContent = state.phase === 'finished'
+      ? '🏁 Game over'
+      : state.phase === 'attack'
+      ? `👁 ${esc(attacker?.username || '?')} is attacking…`
+      : `👁 ${esc(defender?.username || '?')} is defending…`;
+    document.querySelector('.deck-count').textContent = `${state.deck} left`;
+    renderTable(state.table || [], state);
+    renderGamePlayers(state);
+  } else if (game === 'gofish') {
+    const active = state.players[state.currentIndex];
+    banner.textContent = `👁 ${esc(active?.username || '?')}'s turn`;
+    renderGamePlayers(state);
+  } else if (game === 'shithead') {
+    const active = state.players[state.currentIndex];
+    banner.textContent = state.phase === 'setup'
+      ? '👁 Players are setting up…'
+      : `👁 ${esc(active?.username || '?')}'s turn`;
+    document.querySelector('.deck-count').textContent = `${state.deckCount ?? 0} left`;
+    renderGamePlayers(state);
+  }
+
+  // Clear hand area — spectators don't play
+  document.getElementById('player-hand').innerHTML =
+    '<div style="color:var(--muted);font-size:13px;text-align:center;padding:12px">👁 You are spectating</div>';
+  // Clear action buttons
+  const acts = document.querySelector('.game-actions');
+  if (acts) acts.innerHTML = '';
+}
+
+function joinRoom(roomId) {
+  if (!App.user) { showToast('🔒','Sign in to join a room'); openAuthModal(); return; }
+  const room = App.rooms.find(r=>r.id===roomId);
+  if (room?.hasPassword) {
+    showPasswordModal(roomId, room.name);
+  } else {
+    _doJoin(roomId, null);
+  }
+}
+
+function showPasswordModal(roomId, roomName) {
+  document.getElementById('pw-modal')?.remove();
+  const m = document.createElement('div');
+  m.id = 'pw-modal';
+  m.style.cssText = 'position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center';
+  m.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:320px;max-width:92vw">
+      <div style="font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:6px">🔒 Password Required</div>
+      <div style="color:var(--muted);font-size:13px;margin-bottom:20px">${esc(roomName)}</div>
+      <input id="pw-input" type="password" class="form-input" placeholder="Enter room password" autocomplete="off"
+        style="width:100%;margin-bottom:14px" onkeydown="if(event.key==='Enter')submitPwModal('${roomId}')">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="submitPwModal('${roomId}')">Join</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('pw-modal')?.remove()">Cancel</button>
+      </div>
+    </div>`;
+  m.addEventListener('click', e => { if (e.target===m) m.remove(); });
+  document.body.appendChild(m);
+  setTimeout(() => document.getElementById('pw-input')?.focus(), 50);
+}
+
+function submitPwModal(roomId) {
+  const pw = document.getElementById('pw-input')?.value || '';
+  document.getElementById('pw-modal')?.remove();
+  _doJoin(roomId, pw);
+}
+
+function _doJoin(roomId, password) {
+  App.socket.emit('room:join', {roomId, password}, res => {
+    if (res.error) { showToast('❌', res.error); return; }
+    App.currentRoom = res.room;
+    document.getElementById('chat-messages').innerHTML = '';
+    (res.chat||[]).forEach(m => addChat(m.senderUsername, m.text));
+    renderGameRoom(res.room);
+    showPage('game');
+    showToast('🎮', `Joined ${res.room.name}`);
+  });
+}
+
+function openCreateRoom() {
+  if (!App.user) { showToast('🔒','Sign in to create a room'); openAuthModal(); return; }
+  openModal('modal-overlay');
+}
+function closeModalOutside(e) {
+  if (e.target.id==='modal-overlay') closeModal('modal-overlay');
+  if (e.target.id==='modal-auth')    closeModal('modal-auth');
+}
+function selectGame(el) {
+  document.querySelectorAll('.game-select-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function createRoom() {
+  if (!App.user) { showToast('🔒','Sign in first'); return; }
+  const nameEl   = document.querySelector('#modal-overlay .form-input');
+  const name     = nameEl?.value.trim() || `${App.user.username}'s Room`;
+  const gameName = document.querySelector('.game-select-btn.selected .gsb-name')?.textContent.trim()||'Durak';
+  const gameMap  = {'Durak':'durak','Shithead':'shithead','Go Fish':'gofish'};
+  const game     = gameMap[gameName]||'durak';
+  const selects  = document.querySelectorAll('#modal-overlay .form-select');
+  const maxPlayers = parseInt(selects[0]?.value)||4;
+  const mode     = (selects[1]?.value||'Casual').toLowerCase();
+  const passEl   = document.querySelector('#modal-overlay input[type="password"]');
+  const password = passEl?.value||null;
+
+  const btn = document.querySelector('#modal-overlay .btn-primary');
+  if (btn) { btn.disabled=true; btn.textContent='Creating…'; }
+
+  App.socket.emit('room:create', {name, game, maxPlayers, mode, password:password||null}, res => {
+    if (btn) { btn.disabled=false; btn.textContent='Create Room'; }
+    if (res.error) { showToast('❌', res.error); return; }
+    App.currentRoom = res.room;
+    document.getElementById('chat-messages').innerHTML = '';
+    closeModal('modal-overlay');
+    renderGameRoom(res.room);
+    showPage('game');
+    showToast('✅',`Room created! Code: ${res.room.id}`);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  GAME ROOM  (waiting + live)
+// ─────────────────────────────────────────────────────────────────────────────
+const COLORS = [
+  'linear-gradient(135deg,#4f8cff,#6a9fff)',
+  'linear-gradient(135deg,#00d4aa,#00bfa0)',
+  'linear-gradient(135deg,#f5c542,#e0a800)',
+  'linear-gradient(135deg,#ff5c5c,#e04040)',
+  'linear-gradient(135deg,#c084fc,#a855f7)',
+  'linear-gradient(135deg,#fb923c,#ea7d2e)',
+];
+
+function renderGameRoom(room) {
+  App.currentRoom = room;
+  _renderInfoPanel(room);
+  _renderLobbyPlayers(room.players||[]);
+  _updateWaitingOverlay(room);
+}
+
+function _updateWaitingOverlay(room) {
+  const overlay = document.getElementById('waiting-overlay');
+  if (!overlay) return;
+  if (room.status === 'playing') {
+    overlay.style.display = 'none';
+    return;
+  }
+  overlay.style.display = 'flex';
+  const isHost = room.hostId === (App.user?.id || App.guestId);
+  const needed = Math.max(0, 2 - (room.players?.length || 0));
+  document.getElementById('waiting-title').textContent =
+    room.status === 'waiting'
+      ? (room.players?.length >= 2 ? 'Ready to start!' : `Waiting for ${needed} more player${needed !== 1 ? 's' : ''}…`)
+      : 'Game finished';
+  document.getElementById('waiting-sub').textContent =
+    isHost ? (room.players?.length >= 2 ? 'You can start the game now →' : 'Share the room code with friends') :
+    'Waiting for host to start the game';
+  // Mini player bubbles
+  const bubblesEl = document.getElementById('waiting-players');
+  if (bubblesEl && room.players) {
+    bubblesEl.innerHTML = room.players.map((p, i) =>
+      `<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="width:40px;height:40px;border-radius:50%;background:${COLORS[i%COLORS.length]};
+          display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;
+          border:2px solid ${p.id===(App.user?.id||App.guestId)?'var(--accent)':'transparent'}">
+          ${p.username[0].toUpperCase()}
+        </div>
+        <div style="font-size:11px;color:var(--muted)">${esc(p.username)}</div>
+      </div>`
+    ).join('');
+  }
+}
+
+function refreshRoomPanel() {
+  if (!App.currentRoom?.id) return;
+  const fresh = App.rooms.find(r => r.id === App.currentRoom.id);
+  if (fresh) {
+    App.currentRoom = fresh;
+    renderGameRoom(fresh);
+  } else if (App.currentRoom) {
+    // Room not in lobby list yet, just update overlay with what we have
+    _updateWaitingOverlay(App.currentRoom);
+  }
+}
+
+function _renderInfoPanel(room) {
+  const isHost = room.hostId === (App.user?.id || App.guestId);
+  const infoPanel = document.querySelector('.game-sidebar .sidebar-panel:nth-child(2)');
+  if (!infoPanel) return;
+  infoPanel.innerHTML = `
+    <div class="sidebar-panel-title">Game Info</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:6px">
+      <span style="color:var(--muted)">Game</span><span>${esc(room.gameLabel||room.game)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:6px">
+      <span style="color:var(--muted)">Code</span>
+      <button class="room-code-btn" onclick="copyRoomCode('${room.id}')" title="Click to copy">${room.id}</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:14px">
+      <span style="color:var(--muted)">Mode</span>
+      <span style="text-transform:capitalize">${room.mode}</span>
+    </div>
+    ${isHost
+      ? `<button id="start-btn" class="btn btn-success btn-sm"
+           style="width:100%;justify-content:center;margin-bottom:8px" onclick="startGame()">▶ Start Game</button>`
+      : `<div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px;padding:8px;
+           background:rgba(0,0,0,.2);border-radius:8px">Waiting for host to start…</div>`
+    }
+    <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center" onclick="leaveRoom()">Leave Room</button>`;
+}
+
+function _renderLobbyPlayers(players) {
+  const panel = document.querySelector('.game-sidebar .sidebar-panel:first-child');
+  if (!panel) return;
+  panel.innerHTML = `<div class="sidebar-panel-title">Players (${players.length})</div>` +
+    players.map((p,i) => {
+      const isMe = p.id===(App.user?.id||App.guestId) || p.username===App.user?.username;
+      return `<div class="player-row${isMe?' current-turn':''}">
+        <div class="player-avatar-circle" style="background:${COLORS[i%COLORS.length]}">${p.username[0].toUpperCase()}</div>
+        <div class="player-info">
+          <div class="player-name">${esc(p.username)}${isMe?' <span style="color:var(--muted);font-size:11px">(you)</span>':''}</div>
+          <div class="player-cards-count">In lobby</div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function copyRoomCode(code) {
+  // Copy invite URL (preferred) with room code fallback
+  const url = `${window.location.origin}${window.location.pathname}?join=${code}`;
+  navigator.clipboard?.writeText(url)
+    .then(()=>showToast('🔗', 'Invite link copied!'))
+    .catch(()=>{
+      navigator.clipboard?.writeText(code);
+      showToast('📋', `Room code: ${code}`);
+    });
+}
+
+function startGame() {
+  const btn = document.getElementById('start-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Starting…'; }
+  App.socket.emit('game:start', {}, res => {
+    if (res?.error) {
+      showToast('❌', res.error);
+      if (btn) { btn.disabled=false; btn.textContent='▶ Start Game'; }
+    }
+  });
+}
+
+function leaveRoom() {
+  App.socket.emit('room:leave');
+  App.currentRoom = null;
+  App.gameState   = null;
+  App.isSpectator = false;
+  App.selectedCardId = null;
+  App.pendingAttackCardId = null;
+  document.querySelector('.turn-banner')?.remove();
+  showPage('lobby');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  TURN TIMER (client-side countdown display)
+// ─────────────────────────────────────────────────────────────────────────────
+function startLocalTimer(state) {
+  clearInterval(App.turnTimerHandle);
+  let el = document.querySelector('.turn-timer');
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'turn-timer';
+    document.querySelector('.game-table')?.appendChild(el);
+  }
+  if (state.phase === 'finished' || state.phase === 'setup') { el.remove(); return; }
+  const SECS = 45;
+  App.turnTimerEnd = Date.now() + SECS * 1000;
+  App.turnTimerHandle = setInterval(() => {
+    const remaining = Math.max(0, Math.ceil((App.turnTimerEnd - Date.now()) / 1000));
+    el.textContent = `${remaining}s`;
+    el.className = 'turn-timer' + (remaining <= 10 ? ' urgent' : '');
+    if (remaining === 0) clearInterval(App.turnTimerHandle);
+  }, 500);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  RENDER GAME STATE
+// ─────────────────────────────────────────────────────────────────────────────
+function renderGameState(state) {
+  // Support guests — use their stable guestId as identity
+  const myId = App.user?.id || App.guestId;
+  if (!myId) return;
+
+  // Route to the right renderer based on game type
+  const game = App.currentRoom?.game || 'durak';
+  if (game === 'shithead') return renderShitheadState(state);
+  if (game === 'gofish')   return renderGoFishState(state);
+
+  const attacker   = state.players[state.attackerIndex];
+  const defender   = state.players[state.defenderIndex];
+  const isAttacker = attacker?.id === myId;
+  const isDefender = defender?.id === myId;
+  const me         = state.players.find(p => p.id===myId);
+
+  // ── Turn banner ──────────────────────────────────────
+  let banner = document.querySelector('.turn-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.className = 'turn-banner';
+    document.querySelector('.game-table').appendChild(banner);
+  }
+  if (state.phase==='finished') {
+    banner.remove();
+  } else if (isAttacker && state.phase==='attack') {
+    banner.className  = 'turn-banner';
+    banner.textContent = state.table.length===0
+      ? '⚔️ Your turn — click a card to attack'
+      : '⚔️ Add more cards, or End Attack';
+  } else if (isDefender && state.phase==='defense') {
+    banner.className  = 'turn-banner defending';
+    banner.textContent = App.selectedCardId
+      ? '🛡️ Now click an attack card on the table'
+      : '🛡️ Select a card from your hand to defend';
+  } else {
+    banner.className  = 'turn-banner waiting';
+    const who = state.phase==='defense'
+      ? `${esc(state.usernames?.[defender?.id]||'Defender')} is defending…`
+      : `${esc(state.usernames?.[attacker?.id]||'Attacker')} is attacking…`;
+    banner.textContent = who;
+  }
+
+  // ── Deck ─────────────────────────────────────────────
+  document.querySelector('.deck-count').textContent = `${state.deck} left`;
+  document.querySelector('.deck-stack').style.opacity = state.deck===0 ? '0.1' : '1';
+
+  // ── Trump card ────────────────────────────────────────
+  if (state.trumpCard) {
+    const isRed = state.trumpCard.color==='red';
+    document.querySelector('.trump-card .rank').textContent  = state.trumpCard.rank;
+    document.querySelector('.trump-card .suit').textContent  = state.trumpCard.suit;
+    document.querySelector('.trump-card .rank').style.color  = isRed ? '#d32f2f' : '#1a1a1a';
+    document.querySelector('.trump-card .suit').style.color  = isRed ? '#d32f2f' : '#1a1a1a';
+    document.querySelector('.trump-label').textContent       = `${state.trumpCard.suit} Trump`;
+  }
+
+  // ── Hand ─────────────────────────────────────────────
+  if (me?.hand) renderPlayerHand(me.hand, state);
+
+  // ── Opponents ─────────────────────────────────────────
+  renderOpponents(state.players.filter(p=>p.id!==myId), state);
+
+  // ── Table ─────────────────────────────────────────────
+  renderTable(state.table||[], state);
+
+  // ── Sidebar ───────────────────────────────────────────
+  renderGamePlayers(state);
+  renderGameInfoPanel(state);
+
+  // ── Action buttons ────────────────────────────────────
+  renderActionButtons(state, isAttacker, isDefender);
+}
+
+function renderPlayerHand(hand, state) {
+  const myId     = App.user?.id || App.guestId;
+  const defender = state.players[state.defenderIndex];
+  const isDefender = defender?.id===myId;
+  const isAttacker = state.players[state.attackerIndex]?.id===myId;
+  const me = state.players.find(p=>p.id===myId);
+  // Can play if: you are attacker during attack phase, defender during defense phase,
+  // OR you are a non-defender active player during attack phase (pile-on)
+  const canPlay = !me?.isOut && (
+    (isAttacker && state.phase==='attack') ||
+    (isDefender && state.phase==='defense') ||
+    (!isDefender && !isAttacker && state.phase==='attack')
+  );
+
+  document.getElementById('player-hand').innerHTML = hand.map((c,i) => {
+    const rotate   = (i - (hand.length-1)/2) * 3;
+    const selected = c.id===App.selectedCardId;
+    const classes  = ['card-face', c.color, 'player-card',
+      selected ? 'selected-card' : '',
+      canPlay  ? '' : 'unplayable'
+    ].filter(Boolean).join(' ');
+    return `<div class="${classes}" onclick="${canPlay?`pickHandCard('${c.id}')`:''}"
+      style="transform:rotate(${rotate}deg)">
+      <div class="rank">${c.rank}</div><div class="suit">${c.suit}</div>
+      <div class="rank-bottom">${c.rank}</div><div class="suit-bottom">${c.suit}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderOpponents(opponents, state) {
+  const labelEl = document.querySelector('.opponent-area .player-label');
+  const oppArea = document.getElementById('opp-hand');
+  if (!opponents.length) { if(labelEl) labelEl.innerHTML=''; oppArea.innerHTML=''; return; }
+
+  const isAtk = id => state.players[state.attackerIndex]?.id===id;
+  const isDef = id => state.players[state.defenderIndex]?.id===id;
+
+  if (opponents.length===1) {
+    const opp = opponents[0];
+    if (labelEl) labelEl.innerHTML =
+      `<span class="player-avatar" style="${isAtk(opp.id)?'background:var(--gold)':''}"></span>
+      ${esc(opp.username)}${isAtk(opp.id)?' ⚔️':isDef(opp.id)?' 🛡️':''} · ${opp.cardCount} card${opp.cardCount!==1?'s':''}`;
+    const n = Math.max(opp.cardCount, 0);
+    oppArea.innerHTML = Array.from({length:n},(_,i)=>
+      `<div class="card-back opp-card" style="transform:rotate(${(i-(n-1)/2)*3}deg)">
+        <div style="font-size:10px;color:rgba(255,255,255,.15)">◆</div></div>`
+    ).join('');
+  } else {
+    if (labelEl) labelEl.innerHTML = opponents.map(o =>
+      `<span style="margin-right:10px">${isAtk(o.id)?'⚔️':isDef(o.id)?'🛡️':''} ${esc(o.username)}
+        <span style="color:var(--muted);font-size:11px">(${o.cardCount})</span></span>`
+    ).join('');
+    oppArea.innerHTML = opponents.map(opp => {
+      const n = Math.max(opp.cardCount,0);
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;margin:0 6px">
+        <div style="font-size:11px;color:rgba(255,255,255,.45)">${esc(opp.username)}</div>
+        <div class="card-hand" style="justify-content:center">${
+          Array.from({length:n},(_,i)=>
+            `<div class="card-back opp-card" style="width:42px;height:62px;transform:rotate(${(i-(n-1)/2)*2.5}deg)">
+              <div style="font-size:8px;color:rgba(255,255,255,.12)">◆</div></div>`
+          ).join('')
+        }</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function renderTable(table, state) {
+  const myId     = App.user?.id || App.guestId;
+  const defender = state.players[state.defenderIndex];
+  const isDefender = defender?.id===myId;
+  const area = document.getElementById('play-area');
+
+  if (!table.length) { area.innerHTML='<div class="play-slot">Drop here</div>'; return; }
+
+  area.innerHTML = table.map(slot => {
+    const a = slot.attack, d = slot.defense;
+    const needsDef = !d && isDefender && state.phase==='defense';
+    const isPend   = a.id===App.pendingAttackCardId;
+    const aCls = ['card-face', a.color,
+      needsDef ? 'needs-defense' : '',
+      isPend   ? 'pending-atk'  : '',
+    ].filter(Boolean).join(' ');
+    return `<div style="position:relative;width:72px;height:105px;flex-shrink:0">
+      <div class="${aCls}" onclick="${needsDef?`pickAttackCard('${a.id}')`:''}"
+        title="${needsDef?`Defend ${a.rank}${a.suit}`:''}">
+        <div class="rank">${a.rank}</div><div class="suit">${a.suit}</div>
+        <div class="rank-bottom">${a.rank}</div><div class="suit-bottom">${a.suit}</div>
+      </div>
+      ${d?`<div class="card-face ${d.color}" style="position:absolute;top:12px;left:12px;transform:rotate(15deg);z-index:5;pointer-events:none">
+        <div class="rank">${d.rank}</div><div class="suit">${d.suit}</div>
+        <div class="rank-bottom">${d.rank}</div><div class="suit-bottom">${d.suit}</div>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderGamePlayers(state) {
+  const panel    = document.querySelector('.game-sidebar .sidebar-panel:first-child');
+  if (!panel) return;
+  const attacker = state.players[state.attackerIndex];
+  const defender = state.players[state.defenderIndex];
+  panel.innerHTML = `<div class="sidebar-panel-title">Players</div>` +
+    state.players.map((p,i) => {
+      const isAtk = p.id===attacker?.id;
+      const isDef = p.id===defender?.id;
+      const isMe  = p.id===(App.user?.id || App.guestId);
+      const role  = isAtk
+        ? `<span class="turn-indicator">⚔️ Attack</span>`
+        : isDef ? `<span class="turn-indicator" style="color:var(--gold)">🛡️ Defend</span>` : '';
+      return `<div class="player-row${(isAtk||isDef)?' current-turn':''}">
+        <div class="player-avatar-circle" style="background:${COLORS[i%COLORS.length]}">${p.username[0].toUpperCase()}</div>
+        <div class="player-info">
+          <div class="player-name">${esc(p.username)}${isMe?' <span style="color:var(--muted);font-size:11px">(you)</span>':''}</div>
+          <div class="player-cards-count">${p.isOut?'✅ Done':`${p.cardCount} card${p.cardCount!==1?'s':''}`}</div>
+        </div>${role}
+      </div>`;
+    }).join('');
+}
+
+function renderGameInfoPanel(state) {
+  const panel = document.querySelector('.game-sidebar .sidebar-panel:nth-child(2)');
+  if (!panel) return;
+  const rid = App.currentRoom?.id||'';
+  panel.innerHTML = `
+    <div class="sidebar-panel-title">Game Info</div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+      <span style="color:var(--muted)">Round</span><span>${state.round}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:5px">
+      <span style="color:var(--muted)">Trump</span>
+      <span style="font-size:20px;color:${state.trumpCard?.color==='red'?'#d32f2f':'var(--text)'}">${state.trumpSuit}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+      <span style="color:var(--muted)">Deck</span><span>${state.deck} cards</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:14px">
+      <span style="color:var(--muted)">Phase</span>
+      <span style="text-transform:capitalize;color:${state.phase==='attack'?'var(--accent)':'var(--gold)'}">${state.phase}</span>
+    </div>
+    ${rid?`<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:14px">
+      <span style="color:var(--muted)">Code</span>
+      <button class="room-code-btn" onclick="copyRoomCode('${rid}')">${rid}</button>
+    </div>`:''}
+    <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center" onclick="leaveRoom()">Leave Game</button>`;
+}
+
+function renderActionButtons(state, isAttacker, isDefender) {
+  const acts = document.querySelector('.game-actions');
+  if (!acts) return;  // not on game page or wrong game
+  acts.innerHTML = '';
+  // Only applies to Durak — other games manage their own action buttons
+  if ((App.currentRoom?.game || 'durak') !== 'durak') return;
+
+  // Take Cards
+  if (isDefender && state.phase==='defense' && state.table.some(s=>!s.defense)) {
+    const b = document.createElement('button');
+    b.className='btn btn-danger btn-sm'; b.textContent='Take Cards'; b.onclick=doTakeCards;
+    acts.appendChild(b);
+  }
+  // End Attack — attacker (or pile-on) can end when all cards on table are defended
+  const myIsActive = !state.players.find(p=>p.id===(App.user?.id||App.guestId))?.isOut;
+  const canEndAttack = myIsActive && !isDefender && state.phase==='attack'
+    && state.table.length>0 && state.table.every(s=>s.defense);
+  if (canEndAttack) {
+    const b = document.createElement('button');
+    b.className='btn btn-success btn-sm'; b.textContent='End Attack ✓'; b.onclick=doPassTurn;
+    acts.appendChild(b);
+  }
+  // Hint text
+  if (!acts.children.length) {
+    const hint = document.createElement('span');
+    hint.style.cssText = 'font-size:12px;color:var(--muted)';
+    hint.textContent =
+      isAttacker && state.phase==='attack' && state.table.length===0 ? 'Click a card to attack' :
+      isAttacker && state.phase==='attack'  ? 'Add cards or click End Attack' :
+      isDefender && state.phase==='defense' ? (App.selectedCardId ? 'Click an attack card on the table' : 'Select a card to defend with') :
+      !isDefender && state.phase==='attack' ? 'You can add matching cards to attack' :
+      'Waiting for your turn…';
+    acts.appendChild(hint);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  CARD INTERACTION
+// ─────────────────────────────────────────────────────────────────────────────
+function pickHandCard(cardId) {
+  const state = App.gameState;
+  if (!state) return;
+  const myId     = App.user?.id || App.guestId;
+  const defender = state.players[state.defenderIndex];
+  const isDefender = defender?.id===myId;
+
+  const game = App.currentRoom?.game || 'durak';
+
+  // Shithead: selecting a hand card during setup = pick for swap; during play = emit play
+  if (game === 'shithead') {
+    App.selectedCardId = (App.selectedCardId === cardId) ? null : cardId;
+    if (state.phase === 'play' && state.players[state.currentIndex]?.id === myId) {
+      emitPlay([cardId]);
+      App.selectedCardId = null;
+    }
+    renderShitheadState(state);
+    return;
+  }
+
+  // Go Fish: selecting a hand card sets the rank to ask for
+  if (game === 'gofish') {
+    App.selectedCardId = (App.selectedCardId === cardId) ? null : cardId;
+    renderGoFishState(state);
+    return;
+  }
+
+  // ── Durak ──────────────────────────────────────────────
+  if (isDefender && state.phase==='defense') {
+    if (App.selectedCardId===cardId) {
+      App.selectedCardId = null;
+      App.pendingAttackCardId = null;
+    } else {
+      App.selectedCardId = cardId;
+      if (App.pendingAttackCardId) {
+        _emitDefend(cardId, App.pendingAttackCardId);
+        return;
+      }
+    }
+    const me = state.players.find(p=>p.id===myId);
+    if (me?.hand) renderPlayerHand(me.hand, state);
+    renderTable(state.table, state);
+    const banner = document.querySelector('.turn-banner');
+    if (banner) banner.textContent = App.selectedCardId
+      ? '🛡️ Now click an attack card on the table'
+      : '🛡️ Select a card from your hand to defend';
+    return;
+  }
+
+  const me = state.players.find(p=>p.id===myId);
+  if (state.phase==='attack' && !isDefender && !me?.isOut) {
+    App.socket.emit('game:action', {type:'attack', cardId}, res => {
+      if (res?.error) showToast('❌', res.error);
+    });
+  }
+}
+
+function pickAttackCard(attackCardId) {
+  const state = App.gameState;
+  if (!state) return;
+  if (state.players[state.defenderIndex]?.id !== (App.user?.id || App.guestId)) return;
+
+  if (App.selectedCardId) {
+    _emitDefend(App.selectedCardId, attackCardId);
+  } else {
+    App.pendingAttackCardId = attackCardId;
+    renderTable(state.table, state);
+    const banner = document.querySelector('.turn-banner');
+    if (banner) banner.textContent = '🛡️ Now select a card from your hand';
+  }
+}
+
+function _emitDefend(cardId, attackCardId) {
+  App.selectedCardId = null;
+  App.pendingAttackCardId = null;
+  App.socket.emit('game:action', {type:'defend', cardId, attackCardId}, res => {
+    if (res?.error) showToast('❌', res.error);
+  });
+}
+
+function doTakeCards() {
+  App.selectedCardId = null; App.pendingAttackCardId = null;
+  App.socket.emit('game:action', {type:'take'}, res => {
+    if (res?.error) showToast('❌', res.error);
+    else showToast('😬','You took the cards!');
+  });
+}
+
+function doPassTurn() {
+  App.socket.emit('game:action', {type:'pass'}, res => {
+    if (res?.error) showToast('❌', res.error);
+  });
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SHITHEAD RENDERER
+// ─────────────────────────────────────────────────────────────────────────────
+function renderShitheadState(state) {
+  const myId = App.user?.id || App.guestId;
+  const me = state.players.find(p => p.id === myId);
+  const isActive = state.players[state.currentIndex]?.id === myId;
+
+  // Turn banner
+  let banner = document.querySelector('.turn-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.className = 'turn-banner';
+    document.querySelector('.game-table')?.appendChild(banner);
+  }
+  if (state.phase === 'finished') {
+    banner.remove();
+  } else if (state.phase === 'setup') {
+    banner.className = 'turn-banner';
+    banner.textContent = me?.ready ? '✅ Waiting for others…' : '🃏 Swap cards then click Ready';
+  } else if (isActive) {
+    banner.className = 'turn-banner';
+    banner.textContent = state.pile?.length > 0 && me?.hand?.length
+      ? `Your turn — pile top: ${state.pileTop?.id || '?'} ${state.mustPlayLow ? '(play ≤7!)' : ''}`
+      : 'Your turn — play a card or take the pile';
+  } else {
+    const who = state.players[state.currentIndex]?.username || '?';
+    banner.className = 'turn-banner waiting';
+    banner.textContent = `${esc(who)}'s turn…`;
+  }
+
+  // Deck / pile info in deck area
+  document.querySelector('.deck-count').textContent = `${state.deckCount} deck`;
+  document.querySelector('.deck-stack').style.opacity = state.deckCount === 0 ? '0.1' : '1';
+
+  // Show pile top as trump card
+  const tc = document.querySelector('.trump-card');
+  if (tc) {
+    if (state.pileTop) {
+      const isRed = state.pileTop.color === 'red';
+      tc.querySelector('.rank').textContent = state.pileTop.rank;
+      tc.querySelector('.suit').textContent = state.pileTop.suit;
+      tc.querySelector('.rank').style.color = isRed ? '#d32f2f' : '#1a1a1a';
+      tc.querySelector('.suit').style.color = isRed ? '#d32f2f' : '#1a1a1a';
+      document.querySelector('.trump-label').textContent = `Pile (${state.pileCount})`;
+    } else {
+      document.querySelector('.trump-label').textContent = 'Pile (empty)';
+    }
+  }
+
+  // Hand / face-up / face-down
+  if (me) {
+    const layer = me.hand?.length > 0 ? 'hand'
+                : me.faceUp?.length > 0 ? 'faceUp' : 'faceDown';
+    const isSetup = state.phase === 'setup';
+    const handCards = me.hand || [];
+    const faceUpCards = me.faceUp || [];
+    const faceDownCards = me.faceDown || [];
+    const canPlayHand = isActive && layer === 'hand' && !isSetup;
+    const canPlayFU   = isActive && layer === 'faceUp' && !isSetup;
+    const canPlayFD   = isActive && layer === 'faceDown' && !isSetup;
+    const canSwap     = isSetup && !me.ready;
+
+    document.getElementById('player-hand').innerHTML =
+      `<div style="display:flex;flex-direction:column;gap:8px;align-items:center;width:100%">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">
+          ${isSetup ? '👆 Click to select, then click a face-up card to swap' : layer === 'faceDown' ? '🎲 Playing blind' : ''}
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">
+          ${faceDownCards.map(c =>
+            `<div class="card-back shithead-fd ${canPlayFD ? 'player-card' : ''}"
+              onclick="${canPlayFD ? `emitPlay(['${c.id}'])` : ''}">?</div>`
+          ).join('')}
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">
+          ${faceUpCards.map(c => {
+            const sel = App.selectedCardId === c.id;
+            return `<div class="card-face ${c.color} ${canPlayFU||canSwap?'player-card':''} ${sel?'selected-card':''}"
+              onclick="${canPlayFU ? `emitPlay(['${c.id}'])` : canSwap&&App.selectedCardId ? `emitShitheadSwap('${c.id}')` : ''}">
+              <div class="rank">${c.rank}</div><div class="suit">${c.suit}</div>
+              <div class="rank-bottom">${c.rank}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div style="display:flex;gap:-4px;justify-content:center">
+          ${handCards.map(c => {
+            const sel = App.selectedCardId === c.id;
+            const rotate = (handCards.indexOf(c) - (handCards.length-1)/2) * 3;
+            return `<div class="card-face ${c.color} player-card ${sel?'selected-card':''}"
+              style="transform:rotate(${rotate}deg)"
+              onclick="${canPlayHand ? `pickHandCard('${c.id}')` : canSwap ? `pickHandCard('${c.id}')` : ''}">
+              <div class="rank">${c.rank}</div><div class="suit">${c.suit}</div>
+              <div class="rank-bottom">${c.rank}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+
+    // Shithead action buttons
+    const acts = document.querySelector('.game-actions');
+    if (acts) {
+      acts.innerHTML = '';
+      if (state.phase === 'setup' && !me.ready) {
+        acts.innerHTML = `<button class="btn btn-success btn-sm" onclick="emitLockIn()">✅ Ready</button>`;
+      } else if (isActive && state.phase === 'play') {
+        if (state.pileCount > 0) {
+          acts.innerHTML += `<button class="btn btn-secondary btn-sm" onclick="emitTakePile()">Take Pile (${state.pileCount})</button>`;
+        }
+      }
+    }
+  }
+
+  // Opponents
+  const oppArea = document.getElementById('opponent-area');
+  if (oppArea) {
+    const opps = state.players.filter(p => p.id !== myId);
+    oppArea.innerHTML = opps.map(p => {
+      const isActiveOpp = state.players[state.currentIndex]?.id === p.id;
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;opacity:${p.isOut?0.4:1}">
+        <div style="font-size:11px;font-weight:600;color:${isActiveOpp?'var(--accent)':'var(--muted)'}">
+          ${esc(p.username)}${isActiveOpp?' ↓':''}
+        </div>
+        <div style="display:flex;gap:2px">
+          ${Array(p.faceDownCount||0).fill(0).map(()=>'<div class="card-back opp-card" style="width:30px;height:44px"></div>').join('')}
+        </div>
+        <div style="font-size:11px;color:var(--muted)">${p.handCount}✋ ${p.faceUpCount}↑ ${p.faceDownCount}↓</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Play area — show pile top
+  const pa = document.getElementById('play-area');
+  if (pa) {
+    if (state.pileTop) {
+      pa.innerHTML = `<div style="text-align:center">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Discard pile (${state.pileCount} cards)</div>
+        <div class="card-face ${state.pileTop.color}" style="cursor:default;box-shadow:0 4px 20px rgba(0,0,0,.4)">
+          <div class="rank">${state.pileTop.rank}</div><div class="suit">${state.pileTop.suit}</div>
+          <div class="rank-bottom">${state.pileTop.rank}</div>
+        </div>
+        ${state.mustPlayLow ? '<div style="color:var(--gold);font-size:12px;margin-top:6px;font-weight:600">⚠️ Must play 7 or lower</div>' : ''}
+      </div>`;
+    } else {
+      pa.innerHTML = '<div style="color:var(--muted);font-size:13px">Pile is empty — play any card</div>';
+    }
+  }
+
+  renderGamePlayers(state);
+  renderGoFishOrShitheadInfo(state);
+}
+
+function emitPlay(cardIds) {
+  App.socket.emit('game:action', { type: 'play', cardIds }, res => {
+    if (res?.error) showToast('❌', res.error);
+  });
+  App.selectedCardId = null;
+}
+function emitTakePile() {
+  App.socket.emit('game:action', { type: 'pickup' }, res => {
+    if (res?.error) showToast('❌', res.error);
+  });
+}
+function emitLockIn() {
+  App.socket.emit('game:action', { type: 'ready' }, res => {
+    if (res?.error) showToast('❌', res.error);
+    else showToast('✅', 'Ready!');
+  });
+}
+function emitShitheadSwap(faceUpId) {
+  if (!App.selectedCardId) return;
+  App.socket.emit('game:action', { type: 'swap', cardId: App.selectedCardId, attackCardId: faceUpId }, res => {
+    if (res?.error) showToast('❌', res.error);
+  });
+  App.selectedCardId = null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  GO FISH RENDERER
+// ─────────────────────────────────────────────────────────────────────────────
+function renderGoFishState(state) {
+  const myId = App.user?.id || App.guestId;
+  const me = state.players.find(p => p.id === myId);
+  const isActive = state.players[state.currentIndex]?.id === myId;
+
+  // Turn banner
+  let banner = document.querySelector('.turn-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.className = 'turn-banner';
+    document.querySelector('.game-table')?.appendChild(banner);
+  }
+  if (state.phase === 'finished') {
+    banner.remove();
+  } else if (isActive && state.phase === 'ask') {
+    banner.className = 'turn-banner';
+    banner.textContent = App.selectedCardId
+      ? '🐟 Now click a player to ask them for that rank'
+      : '🐟 Your turn — pick a card rank to ask for';
+  } else if (isActive && state.phase === 'gofish_draw') {
+    banner.className = 'turn-banner';
+    banner.textContent = '🎣 Go Fish! Click the deck to draw';
+  } else {
+    banner.className = 'turn-banner waiting';
+    const who = state.players[state.currentIndex]?.username || '?';
+    banner.textContent = state.phase === 'gofish_draw'
+      ? `${esc(who)} is fishing…`
+      : `${esc(who)}'s turn to ask…`;
+  }
+
+  // Deck display
+  document.querySelector('.deck-count').textContent = `${state.deckCount} left`;
+  document.querySelector('.deck-stack').style.opacity = state.deckCount === 0 ? '0.1' : '1';
+
+  // Hide trump card area (not used in Go Fish)
+  const tc = document.querySelector('.trump-card');
+  if (tc) tc.style.display = 'none';
+
+  // Draw button on deck area
+  const deckArea = document.querySelector('.deck-area');
+  if (deckArea && isActive && state.phase === 'gofish_draw') {
+    deckArea.style.cursor = 'pointer';
+    deckArea.onclick = () => {
+      App.socket.emit('game:action', { type: 'draw' }, res => {
+        if (res?.error) showToast('❌', res.error);
+      });
+      deckArea.onclick = null;
+    };
+  }
+
+  // Hand
+  if (me?.hand) {
+    const canAsk = isActive && state.phase === 'ask';
+    document.getElementById('player-hand').innerHTML = me.hand.map((c, i) => {
+      const sel = App.selectedCardId === c.id;
+      const rotate = (i - (me.hand.length-1)/2) * 3;
+      return `<div class="card-face ${c.color} player-card ${sel?'selected-card':''}"
+        style="transform:rotate(${rotate}deg)"
+        onclick="${canAsk ? `pickHandCard('${c.id}')` : ''}">
+        <div class="rank">${c.rank}</div><div class="suit">${c.suit}</div>
+        <div class="rank-bottom">${c.rank}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Play area: show books and ask interface
+  const pa = document.getElementById('play-area');
+  if (pa) {
+    const selectedRank = me?.hand?.find(c => c.id === App.selectedCardId)?.rank;
+    pa.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%">
+      ${selectedRank ? `<div style="color:var(--accent);font-weight:600;font-size:14px">Asking for <b>${selectedRank}</b>s — click a player →</div>` : ''}
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+        ${state.players.filter(p => p.id !== myId && !p.isOut).map(p =>
+          `<button class="btn btn-secondary btn-sm ${isActive&&selectedRank?'btn-primary':''}"
+            onclick="${isActive&&selectedRank ? `emitAskForCard('${p.id}','${selectedRank}')` : ''}"
+            style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 16px">
+            <span style="font-size:18px">${p.username[0].toUpperCase()}</span>
+            <span style="font-size:12px">${esc(p.username)}</span>
+            <span style="font-size:11px;color:var(--muted)">${p.handCount} cards</span>
+          </button>`
+        ).join('')}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px">
+        ${me?.books?.map(rank =>
+          `<div style="background:rgba(79,140,255,.15);border:1px solid rgba(79,140,255,.3);border-radius:8px;padding:4px 8px;font-size:12px;font-weight:600">${rank}s 📚</div>`
+        ).join('') || '<div style="color:var(--muted);font-size:13px">No books yet</div>'}
+      </div>
+    </div>`;
+  }
+
+  // Opponents
+  const oppArea = document.getElementById('opponent-area');
+  if (oppArea) {
+    const opps = state.players.filter(p => p.id !== myId);
+    oppArea.innerHTML = opps.map(p => {
+      const isActiveOpp = state.players[state.currentIndex]?.id === p.id;
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;opacity:${p.isOut?0.4:1}">
+        <div style="font-size:11px;font-weight:600;color:${isActiveOpp?'var(--accent)':'var(--muted)'}">
+          ${esc(p.username)}${isActiveOpp?' 🎣':''}
+        </div>
+        <div style="font-size:13px;font-weight:600">${p.handCount} 🃏</div>
+        <div style="font-size:11px;color:var(--accent2)">${p.bookCount} 📚</div>
+      </div>`;
+    }).join('');
+  }
+
+  renderGamePlayers(state);
+  renderGoFishOrShitheadInfo(state);
+}
+
+function emitAskForCard(targetId, rank) {
+  App.selectedCardId = null;
+  App.socket.emit('game:action', { type: 'ask', targetId, rank }, res => {
+    if (res?.error) showToast('❌', res.error);
+  });
+}
+
+function renderGoFishOrShitheadInfo(state) {
+  const panel = document.querySelector('.game-sidebar .sidebar-panel:nth-child(2)');
+  if (!panel) return;
+  const game = App.currentRoom?.game || '';
+  const round = state.round || 1;
+  panel.innerHTML = `
+    <div class="sidebar-panel-title">Game Info</div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+      <span style="color:var(--muted)">Round</span><span>${round}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+      <span style="color:var(--muted)">Deck</span><span>${state.deckCount ?? state.deck ?? 0}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:14px">
+      <span style="color:var(--muted)">Mode</span><span style="text-transform:capitalize">${App.currentRoom?.mode||''}</span>
+    </div>
+    <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center" onclick="leaveRoom()">Leave Room</button>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  GAME OVER
+// ─────────────────────────────────────────────────────────────────────────────
+function showGameOver({finishOrder, durak, durakName}) {
+  document.getElementById('game-over-overlay')?.remove();
+  const myId    = App.user?.id || App.guestId;
+  const game    = App.currentRoom?.game || 'durak';
+  const loserTerms = { durak: ["Durak", "must shuffle next game."],
+                       shithead: ["Shithead 🤡", "better luck next time!"],
+                       gofish: ["last place", "keep fishing!"] };
+  const [loserLabel, loserSub] = loserTerms[game] || loserTerms.durak;
+  const isLoser  = durak === myId;
+  const place    = finishOrder.indexOf(myId) + 1 || finishOrder.length;
+  const emoji    = isLoser ? '🤡' : place===1 ? '🏆' : place===2 ? '🥈' : '🎴';
+  const title    = isLoser ? `You're the ${loserLabel}!`
+                 : place===1 ? 'You won! 🎉' : `You finished #${place}`;
+  const subtitle = isLoser ? `${esc(durakName||'You')} ${loserSub}`
+                 : game==='gofish'
+                   ? (() => { const me=App.gameState?.players?.find(p=>p.id===myId);
+                               return me ? `You collected ${me.books?.length||0} book${me.books?.length!==1?'s':''}!` : 'Well played!'; })()
+                 : 'Well played!';
+
+  const isHost = App.currentRoom && App.currentRoom.hostId === (App.user?.id || App.guestId);
+  const ol = document.createElement('div');
+  ol.id = 'game-over-overlay';
+  ol.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center';
+  ol.innerHTML = `
+    <div class="game-over-modal" style="background:var(--surface);border:1px solid var(--border);
+      border-radius:20px;padding:40px;max-width:440px;width:90%;text-align:center">
+      <div style="font-size:64px;margin-bottom:16px">${emoji}</div>
+      <div style="font-family:var(--font-display);font-size:30px;font-weight:800;margin-bottom:8px">${title}</div>
+      <div style="color:var(--muted);font-size:14px;margin-bottom:8px">
+        ${subtitle}
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:4px">
+        Finish order: ${finishOrder.map((id,i)=>`<span style="color:var(--text)">${i+1}. ${esc(App.gameState?.usernames?.[id]||id)}</span>`).join(' · ')}
+      </div>
+      <div id="elo-result" style="margin:16px 0;min-height:28px;display:flex;justify-content:center"></div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="leaveRoom();document.getElementById('game-over-overlay')?.remove()">Back to Lobby</button>
+        <button class="btn btn-success" id="play-again-btn" onclick="doRematch()" style="display:none">▶ Play Again</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('game-over-overlay')?.remove()">View Table</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ol);
+  // Show Play Again button for host only
+  const paBtn = document.getElementById('play-again-btn');
+  if (paBtn && isHost) paBtn.style.display = 'inline-flex';
+}
+
+function doRematch() {
+  const btn = document.getElementById('play-again-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  App.socket.emit('game:rematch', {}, res => {
+    if (res?.error) {
+      showToast('❌', res.error);
+      if (btn) { btn.disabled = false; btn.textContent = '▶ Play Again'; }
+    }
+    // game:reset event will handle the UI transition
+  });
+}
+
+function showEloChanges(changes) {
+  const myId  = App.user?.id;  // guests don't get ELO
+  if (!myId || changes[myId]===undefined) return;
+  const delta = changes[myId];
+  const sign  = delta>0?'+':'';
+  const cls   = delta>0?'elo-up':delta<0?'elo-down':'elo-zero';
+  document.getElementById('elo-result') && (document.getElementById('elo-result').innerHTML =
+    `<span class="elo-badge ${cls}">${sign}${delta} ELO</span>`);
+  showToast(delta>0?'📈':delta<0?'📉':'➡️', `${sign}${delta} ELO`);
+  if (App.user?.stats) {
+    App.user.stats.elo = (App.user.stats.elo||1200) + delta;
+    localStorage.setItem('ace_user', JSON.stringify(App.user));
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  PROFILE
+// ─────────────────────────────────────────────────────────────────────────────
+async function renderProfile() {
+  if (!App.user) { showToast('🔒','Sign in to view your profile'); openAuthModal(); return; }
+  try {
+    const res = await _authFetch('/api/auth/me');
+    if (res.ok) { const d=await res.json(); if(d.user){App.user=d.user;localStorage.setItem('ace_user',JSON.stringify(d.user));} }
+  } catch {}
+
+  const u=App.user, st=u.stats||{};
+  const rate = st.gamesPlayed>0 ? Math.round(st.wins/st.gamesPlayed*100) : 0;
+
+  document.querySelector('.profile-avatar').textContent = u.username[0].toUpperCase();
+  document.querySelector('.profile-name').textContent   = u.username;
+  document.querySelector('.profile-handle').textContent =
+    `@${u.username.toLowerCase()} · Member since ${new Date(u.createdAt).toLocaleDateString('en-GB',{month:'short',year:'numeric'})}`;
+
+  const nums = document.querySelectorAll('.stat-card-num');
+  if (nums[0]) nums[0].textContent = rate+'%';
+  if (nums[1]) nums[1].textContent = st.gamesPlayed||0;
+  if (nums[2]) nums[2].textContent = st.wins||0;
+  if (nums[3]) nums[3].textContent = st.elo||1200;
+
+  // Dynamic badges based on stats
+  const badgesEl = document.getElementById('profile-badges');
+  if (badgesEl) {
+    const badges = [];
+    if ((st.elo||1200) >= 1500) badges.push({text:'🏆 Expert', color:'var(--gold)'});
+    else if ((st.elo||1200) >= 1300) badges.push({text:'⭐ Advanced', color:'var(--accent)'});
+    if ((st.gamesPlayed||0) >= 100) badges.push({text:'🎴 Veteran', color:'var(--accent2)'});
+    else if ((st.gamesPlayed||0) >= 10) badges.push({text:'🎮 Regular', color:'var(--accent2)'});
+    if (rate >= 70 && (st.gamesPlayed||0) >= 5) badges.push({text:'🔥 Win Streak', color:'#fb923c'});
+    badgesEl.innerHTML = badges.map(b =>
+      `<span class="profile-badge" style="color:${b.color};background:${b.color}1a;border-color:${b.color}4d">${b.text}</span>`
+    ).join('') || '<span class="profile-badge" style="color:var(--muted)">🆕 New Player</span>';
+  }
+
+  // Per-game stats using IDs we added to the HTML
+  const byGame = st.byGame||{};
+  ['durak','shithead','gofish'].forEach(g => {
+    const el = document.getElementById(`stat-${g}-text`);
+    if (!el) return;
+    const gs = byGame[g];
+    if (gs && gs.gamesPlayed>0) {
+      const wr = Math.round(gs.wins/gs.gamesPlayed*100);
+      el.innerHTML = `${gs.gamesPlayed} games · <span style="color:var(--accent2)">${wr}% win</span>`;
+    } else {
+      el.textContent = '0 games played';
+    }
+  });
+
+  // Match history
+  try {
+    const res = await _authFetch('/api/auth/history?limit=15');
+    if (res.ok) { const d=await res.json(); if(d.history) renderMatchHistory(d.history); }
+  } catch {}
+}
+
+function renderMatchHistory(history) {
+  const tbody = document.getElementById('history-tbody') || document.querySelector('.history-table tbody');
+  if (!tbody) return;
+  if (!history.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px">No games played yet</td></tr>`;
+    return;
+  }
+  const ICONS = {durak:'🃏',shithead:'🤡',gofish:'🐟'};
+  tbody.innerHTML = history.map(mp => {
+    const m=mp.match, isWin=mp.place===1;
+    const date = m.finishedAt ? new Date(m.finishedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—';
+    const sign  = mp.eloChange>0?'+':'';
+    const eloTd = m.mode==='ranked'
+      ? `<td style="color:${mp.eloChange>0?'var(--accent2)':mp.eloChange<0?'var(--danger)':'var(--muted)'}">${sign}${mp.eloChange}</td>`
+      : `<td style="color:var(--muted)">—</td>`;
+    return `<tr>
+      <td>${ICONS[m.game]||'🎴'} ${({durak:'Durak',shithead:'Shithead',gofish:'Go Fish'})[m.game]||m.game}</td>
+      <td style="text-transform:capitalize">${m.mode}</td>
+      <td>${m.players.length}</td>
+      <td class="${isWin?'result-win':'result-loss'}">${isWin?'Win 🏆':`#${mp.place}`}</td>
+      ${eloTd}
+      <td style="color:var(--muted)">${date}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  CHAT
+// ─────────────────────────────────────────────────────────────────────────────
+function addChat(sender, text) {
+  const msgs = document.getElementById('chat-messages');
+  const div  = document.createElement('div');
+  div.className = 'chat-msg';
+  const isSys = sender==='Game'||sender==='system';
+  div.innerHTML = isSys
+    ? `<span class="sender system">${esc(text)}</span>`
+    : `<span class="sender">${esc(sender)}</span> <span class="msg-text">${esc(text)}</span>`;
+  msgs.appendChild(div);
+  // Cap DOM at 150 messages — remove oldest when over limit
+  while (msgs.children.length > 150) msgs.removeChild(msgs.firstChild);
+  if (msgs.scrollHeight - msgs.scrollTop < msgs.clientHeight + 100) msgs.scrollTop = msgs.scrollHeight;
+}
+function addSystemChat(t) { addChat('Game', t); }
+function sendChat(e) { if(e.key==='Enter') sendChatBtn(); }
+function sendChatBtn() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim().slice(0,200);
+  if (!text) return;
+  inp.value = '';
+  // Don't echo locally - server broadcasts room:chat back to sender too
+  App.socket.emit('room:chat', {text});
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  MODALS / TOAST / UTILS
+// ─────────────────────────────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+
+let _toastT;
+function showToast(icon, msg) {
+  clearTimeout(_toastT);
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-msg').textContent  = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  _toastT = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+function esc(s) {
+  return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  AUTH MODAL INJECTION
+// ─────────────────────────────────────────────────────────────────────────────
+document.body.insertAdjacentHTML('beforeend', `
+<div class="modal-overlay" id="modal-auth" onclick="closeModalOutside(event)">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title" id="auth-title">Sign In</div>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input class="form-input" id="auth-username" placeholder="Your username" autocomplete="username"
+        onkeydown="if(event.key==='Enter')document.getElementById('auth-password').focus()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="auth-password" type="password" placeholder="Your password"
+        autocomplete="current-password" onkeydown="if(event.key==='Enter')submitAuth()">
+    </div>
+    <div id="auth-error" style="color:var(--danger);font-size:13px;margin-bottom:12px;min-height:18px"></div>
+    <div class="modal-footer" style="flex-direction:column;gap:8px">
+      <button id="auth-submit-btn" class="btn btn-primary" style="width:100%;justify-content:center" onclick="submitAuth()">Sign In</button>
+      <button class="btn btn-secondary btn-sm" id="auth-toggle" data-mode="register"
+        style="width:100%;justify-content:center" onclick="toggleAuthMode()">No account? Register</button>
+    </div>
+  </div>
+</div>`);
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  LEADERBOARD
+// ─────────────────────────────────────────────────────────────────────────────
+let _lbGame = '';
+let _lbOffset = 0;
+const LB_LIMIT = 20;
+
+async function showLeaderboard() {
+  showPage('leaderboard');
+  _lbOffset = 0;
+  await loadLeaderboard('', document.querySelector('.lb-filter'));
+}
+
+async function loadLeaderboard(game, el) {
+  _lbGame = game;
+  _lbOffset = 0;
+  document.querySelectorAll('.lb-filter').forEach(b => b.classList.remove('active', 'btn-primary'));
+  document.querySelectorAll('.lb-filter').forEach(b => b.classList.add('btn-secondary'));
+  if (el) { el.classList.remove('btn-secondary'); el.classList.add('active', 'btn-primary'); }
+  const tbody = document.getElementById('lb-tbody');
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px">Loading…</td></tr>`;
+  await _fetchLeaderboard(false);
+}
+
+async function loadMoreLeaderboard() {
+  _lbOffset += LB_LIMIT;
+  await _fetchLeaderboard(true);
+}
+
+async function _fetchLeaderboard(append) {
+  try {
+    const url = `/api/lobby/leaderboard?limit=${LB_LIMIT}&offset=${_lbOffset}${_lbGame ? '&game=' + _lbGame : ''}`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (!data.leaderboard) throw new Error('bad response');
+    _renderLeaderboard(data.leaderboard, append);
+    const btn = document.getElementById('lb-load-more');
+    if (btn) btn.style.display = data.leaderboard.length === LB_LIMIT ? 'inline-flex' : 'none';
+  } catch(e) {
+    const tbody = document.getElementById('lb-tbody');
+    if (!append && tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:40px">Failed to load leaderboard</td></tr>`;
+  }
+}
+
+function _renderLeaderboard(entries, append) {
+  const tbody = document.getElementById('lb-tbody');
+  if (!tbody) return;
+  if (!entries.length && !append) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px">No players yet — play some games!</td></tr>`;
+    return;
+  }
+  const startRank = _lbOffset + 1;
+  const rows = entries.map((entry, i) => {
+    const rank  = startRank + i;
+    const u     = entry.user || entry; // works for both overall and per-game
+    const gp    = entry.gamesPlayed || u.gamesPlayed || 0;
+    const wins  = entry.wins  || u.wins  || 0;
+    const losses= entry.losses|| u.losses|| 0;
+    const elo   = entry.elo;
+    const wr    = gp > 0 ? Math.round(wins / gp * 100) : 0;
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    const eloColor = elo >= 1500 ? 'var(--gold)' : elo >= 1300 ? 'var(--accent2)' : elo < 1100 ? 'var(--danger)' : 'var(--text)';
+    const isMe = (u.id === (App.user?.id||App.guestId)) || u.username === App.user?.username;
+    return `<tr style="${isMe ? 'background:rgba(79,140,255,.06);' : ''}">
+      <td style="text-align:center;font-size:${rank<=3?'20px':'14px'}">${medal}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:${COLORS[(rank-1)%COLORS.length]};
+            display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">
+            ${esc(u.username[0].toUpperCase())}
+          </div>
+          <span style="font-weight:${isMe?700:400}">${esc(u.username)}${isMe?' <span style="color:var(--accent);font-size:11px">(you)</span>':''}</span>
+        </div>
+      </td>
+      <td style="font-family:var(--font-display);font-weight:700;color:${eloColor}">${elo}</td>
+      <td style="color:var(--muted)">${gp}</td>
+      <td style="color:var(--accent2)">${wr}%</td>
+      <td style="color:var(--muted);font-size:13px">${wins}W / ${losses}L</td>
+    </tr>`;
+  });
+  if (append) tbody.insertAdjacentHTML('beforeend', rows.join(''));
+  else tbody.innerHTML = rows.join('');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────────────────────────────────────
+initSocket();
+updateNavAuth();
+
+// Pre-load landing stats via REST so they show before socket connects
+(async function loadInitialStats() {
+  try {
+    const res  = await fetch('/api/stats');
+    const data = await res.json();
+    const statOnline  = document.getElementById('stat-online');
+    const statPlayers = document.getElementById('stat-players');
+    const statGames   = document.getElementById('stat-games');
+    if (statOnline  && data.online      != null) statOnline.textContent  = data.online;
+    if (statPlayers && data.totalPlayers != null) {
+      statPlayers.textContent = data.totalPlayers >= 1000
+        ? (data.totalPlayers / 1000).toFixed(1) + 'k'
+        : data.totalPlayers;
+    }
+    if (statGames && data.totalGames != null) {
+      statGames.textContent = data.totalGames >= 1000
+        ? (data.totalGames / 1000).toFixed(1) + 'k'
+        : data.totalGames;
+    }
+  } catch { /* server not yet up — socket will update shortly */ }
+})();
+
+// Handle invite links: ?join=ROOMCODE — auto-join once socket connects
+(function handleInviteLink() {
+  const params = new URLSearchParams(window.location.search);
+  const joinCode = params.get('join')?.toUpperCase();
+  if (!joinCode) return;
+  // Remove the param from URL without reload
+  const clean = window.location.pathname;
+  history.replaceState({}, '', clean);
+  // Wait for socket + lobby rooms to load, then attempt join
+  const tryJoin = () => {
+    if (!App.socket?.connected) { setTimeout(tryJoin, 300); return; }
+    // Fetch room info first to check if password-protected
+    fetch(`/api/lobby/rooms/${joinCode}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.error) { showPage('lobby'); showToast('❌', `Room ${joinCode} not found`); return; }
+        showPage('lobby');
+        const room = d.room;
+        if (!App.user) {
+          showToast('🔒', 'Sign in to join this room');
+          openAuthModal();
+          // After sign-in, re-trigger join
+          App._pendingJoinCode = joinCode;
+          return;
+        }
+        if (room.hasPassword) {
+          showPasswordModal(joinCode, room.name);
+        } else {
+          _doJoin(joinCode, null);
+        }
+      })
+      .catch(() => { showPage('lobby'); showToast('❌', 'Could not find that room'); });
+  };
+  setTimeout(tryJoin, 600);
+})();
+</script>
+</body>
+</html>
